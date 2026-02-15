@@ -1,19 +1,31 @@
-import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
+import Dashboard from './pages/Dashboard'
+import Tasks from './pages/Tasks'
+import Notes from './pages/Notes'
+import Analytics from './pages/Analytics'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <div className="App">
-      <h1>Smart Scheduler</h1>
-      <p>Intelligent task management app with smart rescheduling, nudges, and mental notes</p>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/notes" element={<Notes />} />
+        <Route path="/analytics" element={<Analytics />} />
+      </Route>
+    </Routes>
   )
 }
-
-export default App
