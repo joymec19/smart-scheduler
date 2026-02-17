@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
@@ -10,6 +11,14 @@ import Signup from './pages/Signup'
 
 export default function App() {
   return (
+    <>
+    <Toaster
+      position="top-center"
+      toastOptions={{
+        duration: 2500,
+        style: { fontSize: '14px', borderRadius: '12px' },
+      }}
+    />
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
@@ -27,5 +36,6 @@ export default function App() {
         <Route path="/analytics" element={<Analytics />} />
       </Route>
     </Routes>
+    </>
   )
 }
