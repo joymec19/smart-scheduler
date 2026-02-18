@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
+import RescheduleModal from './RescheduleModal'
 
 const CATEGORY_COLORS = {
   learning: 'bg-blue-500',
@@ -48,6 +49,7 @@ function formatEstimate(minutes) {
 export default function TaskCard({ task, onComplete, onMiss, onTap }) {
   const x = useMotionValue(0)
   const [swiping, setSwiping] = useState(null)
+  const [rescheduleOpen, setRescheduleOpen] = useState(false)
   const containerRef = useRef(null)
 
   const bgColor = useTransform(x, [-120, -SWIPE_THRESHOLD, 0, SWIPE_THRESHOLD, 120], [
@@ -66,7 +68,7 @@ export default function TaskCard({ task, onComplete, onMiss, onTap }) {
     if (info.offset.x > SWIPE_THRESHOLD && task.status === 'pending') {
       onComplete?.(task.id)
     } else if (info.offset.x < -SWIPE_THRESHOLD && task.status === 'pending') {
-      onMiss?.(task.id)
+      setRescheduleOpen(true)
     }
     setSwiping(null)
   }
@@ -78,6 +80,7 @@ export default function TaskCard({ task, onComplete, onMiss, onTap }) {
   }
 
   return (
+    <>
     <motion.div
       ref={containerRef}
       style={{ backgroundColor: bgColor }}
@@ -91,7 +94,7 @@ export default function TaskCard({ task, onComplete, onMiss, onTap }) {
       )}
       {swiping === 'miss' && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500 font-semibold text-sm">
-          Miss
+          Reschedule
         </div>
       )}
 
@@ -154,5 +157,13 @@ export default function TaskCard({ task, onComplete, onMiss, onTap }) {
         </div>
       </motion.div>
     </motion.div>
+
+    <RescheduleModal
+      open={rescheduleOpen}
+      task={task}
+      onClose={() => setRescheduleOpen(false)}
+      onMiss={onMiss}
+    />
+    </>
   )
 }
