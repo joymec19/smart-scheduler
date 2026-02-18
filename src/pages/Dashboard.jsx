@@ -5,6 +5,8 @@ import { useAuth } from '../hooks/useAuth'
 import useTaskStore from '../stores/useTaskStore'
 import useNudgeStore from '../stores/useNudgeStore'
 import TaskCreateModal from '../components/tasks/TaskCreateModal'
+import QuickCaptureModal from '../components/notes/QuickCaptureModal'
+import NudgeCard from '../components/nudges/NudgeCard'
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
 
@@ -29,27 +31,6 @@ const PRIORITY_STRIPE = {
   low:    'bg-gray-300',
 }
 
-const PLACEHOLDER_NUDGES = [
-  {
-    id: 'n1',
-    title: '🔥 Momentum Alert',
-    message: 'You complete tasks 80% more often on Tuesday mornings!',
-    gradient: 'from-orange-400 to-red-500',
-  },
-  {
-    id: 'n2',
-    title: '📚 Pattern Detected',
-    message: 'Learning tasks work best for you between 9–11 AM.',
-    gradient: 'from-blue-400 to-purple-500',
-  },
-  {
-    id: 'n3',
-    title: '✨ Quick Win',
-    message: 'You have tasks under 15 mins. Start one now!',
-    gradient: 'from-green-400 to-teal-500',
-  },
-]
-
 function formatDate(date) {
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
@@ -62,10 +43,11 @@ export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const { tasks, loading, fetchTasks, getCounts, addTask } = useTaskStore()
-  const { nudges } = useNudgeStore()
+  const { nudges, fetchNudges, getActiveNudges } = useNudgeStore()
 
   const [fabOpen, setFabOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
+  const [noteOpen, setNoteOpen] = useState(false)
 
   const userName =
     user?.user_metadata?.name ||
@@ -73,12 +55,14 @@ export default function Dashboard() {
     'there'
 
   useEffect(() => {
-    if (user) fetchTasks(user.id)
+    if (user) {
+      fetchTasks(user.id)
+      fetchNudges(user.id)
+    }
   }, [user])
 
   const counts = getCounts()
-  const activeNudgesCount =
-    nudges.filter((n) => n.status === 'active').length || PLACEHOLDER_NUDGES.length
+  const activeNudges = getActiveNudges()
 
   const topTasks = [...tasks]
     .filter((t) => t.status === 'pending')
@@ -106,7 +90,7 @@ export default function Dashboard() {
     },
     {
       label: 'Active Nudges',
-      value: activeNudgesCount,
+      value: activeNudges.length,
       valueColor: 'text-amber-600',
       bg: 'bg-amber-50',
     },
@@ -234,26 +218,24 @@ export default function Dashboard() {
       <div className="mt-7">
         <div className="px-4 mb-3 flex items-center justify-between">
           <h2 className="text-gray-800 font-semibold text-base">Smart Nudges</h2>
-          <span className="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium">
-            {PLACEHOLDER_NUDGES.length} active
-          </span>
+          {activeNudges.length > 0 && (
+            <span className="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium">
+              {activeNudges.length} active
+            </span>
+          )}
         </div>
 
-        <div className="flex gap-3 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: 'none' }}>
-          {PLACEHOLDER_NUDGES.map((nudge) => (
-            <motion.div
-              key={nudge.id}
-              whileTap={{ scale: 0.97 }}
-              className={`bg-gradient-to-br ${nudge.gradient} rounded-2xl p-4 flex-shrink-0 w-60 text-white shadow-md`}
-            >
-              <p className="font-semibold text-sm">{nudge.title}</p>
-              <p className="text-white/80 text-xs mt-1.5 leading-relaxed">{nudge.message}</p>
-              <button className="mt-3 bg-white/20 rounded-lg px-3 py-1 text-xs font-medium hover:bg-white/30 transition-colors">
-                Got it
-              </button>
-            </motion.div>
-          ))}
-        </div>
+        {activeNudges.length === 0 ? (
+          <div className="mx-4 bg-white rounded-xl p-5 text-center shadow-sm">
+            <p className="text-gray-400 text-sm">No nudges right now — great work!</p>
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: 'none' }}>
+            {activeNudges.map((nudge) => (
+              <NudgeCard key={nudge.id} nudge={nudge} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── FAB ── */}
@@ -276,7 +258,7 @@ export default function Dashboard() {
                 <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
               </button>
               <button
-                onClick={() => { setFabOpen(false); navigate('/notes') }}
+                onClick={() => { setFabOpen(false); setNoteOpen(true) }}
                 className="flex items-center gap-2 bg-white rounded-full shadow-lg px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-100"
               >
                 Quick Note
@@ -307,6 +289,12 @@ export default function Dashboard() {
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onSubmit={handleCreateTask}
+      />
+
+      {/* ── Quick capture modal (from FAB) ── */}
+      <QuickCaptureModal
+        open={noteOpen}
+        onClose={() => setNoteOpen(false)}
       />
     </div>
   )
