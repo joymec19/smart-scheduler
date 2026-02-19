@@ -6,6 +6,7 @@ import useTaskStore from '../../stores/useTaskStore'
 import { suggestReschedule } from '../../lib/rescheduling'
 import { trackRescheduleAccepted, trackRescheduleRejected, trackTaskMissed } from '../../lib/analytics-tracking'
 import DecomposeWizard from '../decomposition/DecomposeWizard'
+import useDecompositionStore from '../../stores/useDecompositionStore'
 
 function formatDateTime(iso) {
   if (!iso) return '—'
@@ -29,6 +30,7 @@ function toInputValue(iso) {
 
 export default function RescheduleModal({ open, task, onClose, onMiss }) {
   const { updateTask } = useTaskStore()
+  const { startWizard } = useDecompositionStore()
 
   const [suggestion, setSuggestion]       = useState(null)
   const [loadingSuggestion, setLoading]   = useState(false)
@@ -255,7 +257,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
               {/* Decompose button — only when rescheduled 3+ times */}
               {rescheduleCount >= 3 && (
                 <button
-                  onClick={() => setShowWizard(true)}
+                  onClick={() => { startWizard(task); setShowWizard(true) }}
                   className="relative w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 overflow-hidden active:scale-95 transition-transform"
                 >
                   {/* Gradient border via stacked divs */}

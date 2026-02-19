@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 
 export default function Tasks() {
   const { user } = useAuth()
-  const { tasks, loading, error, fetchTasks, addTask, markComplete, markMissed, getCounts } = useTaskStore()
+  const { tasks, loading, error, fetchTasks, addTask, markComplete, markMissed } = useTaskStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
 
@@ -17,7 +17,13 @@ export default function Tasks() {
     }
   }, [user?.id, fetchTasks])
 
-  const counts = getCounts()
+  // Exclude subtasks from the top-level list — they're grouped under their parent
+  const parentTasks = tasks.filter((t) => !t.is_subtask)
+  const parentCounts = {
+    pending:   parentTasks.filter((t) => t.status === 'pending').length,
+    completed: parentTasks.filter((t) => t.status === 'completed').length,
+    missed:    parentTasks.filter((t) => t.status === 'missed').length,
+  }
 
   async function handleCreate(data) {
     await addTask({
@@ -50,8 +56,8 @@ export default function Tasks() {
 
       {/* Task list */}
       <TaskList
-        tasks={tasks}
-        counts={counts}
+        tasks={parentTasks}
+        counts={parentCounts}
         loading={loading}
         error={error}
         onRetry={() => fetchTasks(user.id)}

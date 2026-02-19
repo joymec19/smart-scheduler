@@ -180,3 +180,70 @@ export async function generateInsights(userId) {
 
   return insights.slice(0, 3)
 }
+
+export async function decompositionStats(userId, dateRange) {
+  const { start, end } = getDateRange(dateRange)
+
+  // 1. Decomposition logs created in the period
+  const { data: logs, error: logsErr } = await supabase
+    .from('decomposition_logs')
+    .select('parent_task_id, subtasks_generated')
+    .eq('user_id', userId)
+    .gte('created_at', start)
+    .lte('created_at', end)
+
+  if (logsErr) throw logsErr
+
+  const totalDecomposed = logs?.length || 0
+  const avgSubtasks =
+    totalDecomposed > 0
+      ? Math.round(
+          logs.reduce((s, l) => s + (l.subtasks_generated || 0), 0) / totalDecomposed
+        )
+      : 0
+
+  if (totalDecomposed === 0) {
+    return { totalDecomposed: 0, avgSubtasks: 0, subtaskCompletionRate: null, parentCompletionRate: null, topCategory: null }
+  }
+
+  const parentIds = [...new Set(logs.map((l) => l.parent_task_id))]
+
+  // 2. Parent task completion rate
+  const { data: parentTasks } = await supabase
+    .from('tasks')
+    .select('id, status, category')
+    .in('id', parentIds)
+
+  const parentCompletionRate =
+    parentTasks?.length > 0
+      ? Math.round(
+          (parentTasks.filter((t) => t.status === 'completed').length / parentTasks.length) * 100
+        )
+      : null
+
+  // 3. Subtask completion rate
+  const { data: subtasks } = await supabase
+    .from('tasks')
+    .select('status')
+    .in('parent_task_id', parentIds)
+    .eq('is_subtask', true)
+    .gte('created_at', start)
+    .lte('created_at', end)
+
+  const subtaskCompletionRate =
+    subtasks?.length > 0
+      ? Math.round(
+          (subtasks.filter((t) => t.status === 'completed').length / subtasks.length) * 100
+        )
+      : null
+
+  // 4. Most common category for decomposition
+  const categoryCounts = {}
+  ;(parentTasks || []).forEach((t) => {
+    categoryCounts[t.category] = (categoryCounts[t.category] || 0) + 1
+  })
+  const topCategory =
+    Object.entries(categoryCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || null
+
+  return { totalDecomposed, avgSubtasks, subtaskCompletionRate, parentCompletionRate, topCategory }
+}

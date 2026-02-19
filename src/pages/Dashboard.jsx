@@ -66,9 +66,19 @@ export default function Dashboard() {
   const activeNudges = getActiveNudges()
 
   const topTasks = [...tasks]
-    .filter((t) => t.status === 'pending')
+    .filter((t) => t.status === 'pending' && !t.is_subtask)
     .sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority])
     .slice(0, 3)
+
+  // Compute subtask progress for a parent task (returns null if no subtasks)
+  function subtaskProgress(parentId) {
+    const subtasks = tasks.filter((t) => t.parent_task_id === parentId && t.is_subtask)
+    if (!subtasks.length) return null
+    return {
+      total:     subtasks.length,
+      completed: subtasks.filter((t) => t.status === 'completed').length,
+    }
+  }
 
   const metrics = [
     {
@@ -218,6 +228,26 @@ export default function Dashboard() {
                       </span>
                     )}
                   </div>
+
+                  {/* Subtask progress bar — only shown when subtasks exist */}
+                  {(() => {
+                    const progress = subtaskProgress(task.id)
+                    if (!progress) return null
+                    const pct = Math.round((progress.completed / progress.total) * 100)
+                    return (
+                      <div className="mt-2 flex items-center gap-2">
+                        <div className="h-1 bg-gray-100 rounded-full flex-1">
+                          <div
+                            className="h-1 bg-purple-400 rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] text-gray-400 shrink-0">
+                          {progress.completed}/{progress.total} steps
+                        </span>
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 <div className="flex items-center pr-3">

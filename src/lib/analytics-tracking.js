@@ -55,3 +55,23 @@ export function trackNoteCreated({ category, has_tags }) {
 export function trackAnalyticsViewed() {
   mixpanel.track('analytics_viewed')
 }
+
+export function trackTaskDecomposeStarted({ category, priority, reschedule_count }) {
+  mixpanel.track('task_decompose_started', { category, priority, reschedule_count })
+}
+
+export function trackTaskDecomposeCompleted({ category, subtasks_count, template_used, granularity }) {
+  mixpanel.track('task_decompose_completed', { category, subtasks_count, template_used, granularity })
+}
+
+export function trackTaskDecomposeSubtaskEdited({ edit_type }) {
+  mixpanel.track('task_decompose_subtask_edited', { edit_type })
+}
+
+export function trackTaskDecomposePatternSuggestionShown({ suggestion_type }) {
+  mixpanel.track('task_decompose_pattern_suggestion_shown', { suggestion_type })
+}
+
+export function trackTaskDecomposePatternSuggestionAccepted({ suggestion_type }) {
+  mixpanel.track('task_decompose_pattern_suggestion_accepted', { suggestion_type })
+}
