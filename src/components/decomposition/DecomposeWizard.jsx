@@ -164,6 +164,8 @@ export default function DecomposeWizard({ open, task, onClose }) {
   const clarifyingQuestion = template?.clarifyingQuestion ?? 'What does completing this task mean?'
   const placeholder        = CATEGORY_PLACEHOLDER[task?.category] ?? 'Describe what done looks like…'
   const totalEstimate      = subtasks.reduce((s, t) => s + (t.estimatedMinutes || 0), 0)
+  // Lock non-selected granularity once subtasks have been generated
+  const granularityLocked  = !loadingSteps && subtasks.length > 0
 
   // Reset state and fetch pattern hint when wizard opens
   useEffect(() => {
@@ -302,7 +304,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
             animate={{ opacity: 1, scale: 1,    y: 0  }}
             exit={{    opacity: 0, scale: 0.95, y: 24 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-50 max-w-lg mx-auto overflow-hidden"
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-50 max-w-lg mx-auto overflow-hidden max-h-[88vh] flex flex-col"
           >
             {/* Progress bar */}
             <div className="h-1 bg-gray-100">
@@ -326,7 +328,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
             </div>
 
             {/* ── Animated step panels ── */}
-            <div className="overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
               <AnimatePresence custom={dir} mode="wait">
 
                 {/* ─── STEP 1 — Clarifying question ─── */}
@@ -396,33 +398,40 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     animate="center"
                     exit="exit"
                     transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                    className="px-5 pt-3 pb-7"
+                    className="px-5 pt-3 pb-5 flex flex-col flex-1 min-h-0"
                   >
-                    <h2 className="text-lg font-bold text-gray-800">Proposed Breakdown</h2>
+                    <h2 className="text-lg font-bold text-gray-800 shrink-0">Proposed Breakdown</h2>
 
-                    {/* Granularity toggle */}
-                    <div className="mt-3 flex bg-gray-100 rounded-xl p-1 gap-1">
-                      {GRANULARITY.map((opt) => (
-                        <button
-                          key={opt.value}
-                          onClick={() => {
-                            setGranularity(opt.value)
-                            loadSubtasks(opt.value)
-                          }}
-                          className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[32px] ${
-                            granularity === opt.value
-                              ? 'bg-white text-purple-600 shadow-sm'
-                              : 'text-gray-500 hover:text-gray-700'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
+                    {/* Granularity toggle — locked once subtasks are generated */}
+                    <div className="mt-3 shrink-0 flex bg-gray-100 rounded-xl p-1 gap-1">
+                      {GRANULARITY.map((opt) => {
+                        const isSelected = granularity === opt.value
+                        const isLocked   = granularityLocked && !isSelected
+                        return (
+                          <button
+                            key={opt.value}
+                            disabled={loadingSteps || isLocked}
+                            onClick={() => {
+                              setGranularity(opt.value)
+                              loadSubtasks(opt.value)
+                            }}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[32px] ${
+                              isSelected
+                                ? 'bg-white text-purple-600 shadow-sm'
+                                : isLocked
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        )
+                      })}
                     </div>
 
                     {/* Inline pattern hint */}
                     {patternHint?.hasSuggestion && (
-                      <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2">
+                      <div className="mt-3 shrink-0 bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2">
                         <span className="text-blue-500 shrink-0 mt-0.5 text-sm">💡</span>
                         <p className="text-blue-700 text-xs leading-snug">
                           {patternHint.suggestionText}
@@ -432,12 +441,12 @@ export default function DecomposeWizard({ open, task, onClose }) {
 
                     {/* Subtask list */}
                     {loadingSteps ? (
-                      <div className="mt-4 flex items-center justify-center gap-2 text-gray-400 text-sm py-10">
+                      <div className="mt-4 flex-1 flex items-center justify-center gap-2 text-gray-400 text-sm">
                         <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
                         Generating steps…
                       </div>
                     ) : (
-                      <div className="mt-3 max-h-[46vh] overflow-y-auto space-y-2 pr-0.5">
+                      <div className="mt-3 flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5">
                         {subtasks.map((sub, idx) => (
                           <SubtaskRow
                             key={sub.id}
@@ -461,7 +470,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     )}
 
                     {/* Time summary */}
-                    <div className="mt-3 flex items-center justify-between text-xs text-gray-500 bg-gray-50 rounded-xl px-3 py-2">
+                    <div className="mt-3 shrink-0 flex items-center justify-between text-xs text-gray-500 bg-gray-50 rounded-xl px-3 py-2">
                       <span>
                         Total: <strong>{fmtMin(totalEstimate)}</strong>
                       </span>
@@ -471,7 +480,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     </div>
 
                     {/* CTA row */}
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 shrink-0 flex gap-2">
                       <button
                         onClick={goBack}
                         className="flex-1 bg-gray-100 text-gray-600 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
