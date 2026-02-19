@@ -1,6 +1,7 @@
 import { memo, useState, useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import RescheduleModal from './RescheduleModal'
+import { trackTaskCompleted } from '../../lib/analytics-tracking'
 
 const CATEGORY_COLORS = {
   learning: 'bg-blue-500',
@@ -66,6 +67,7 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
 
   function handleDragEnd(_, info) {
     if (info.offset.x > SWIPE_THRESHOLD && task.status === 'pending') {
+      trackTaskCompleted({ was_overdue: isOverdue(task.due_at) })
       onComplete?.(task.id)
     } else if (info.offset.x < -SWIPE_THRESHOLD && task.status === 'pending') {
       setRescheduleOpen(true)

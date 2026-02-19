@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import useNoteStore from '../../stores/useNoteStore'
 import useTaskStore from '../../stores/useTaskStore'
 import { useAuth } from '../../hooks/useAuth'
+import { trackNoteCreated } from '../../lib/analytics-tracking'
 
 const CATEGORIES = [
   { value: 'learning', label: 'Learning', icon: '📚', color: 'bg-blue-500' },
@@ -78,6 +79,7 @@ export default function QuickCaptureModal({ open, onClose }) {
         tags,
         source_task_id: linkTask ? selectedTaskId : null,
       })
+      trackNoteCreated({ category, has_tags: tags.length > 0 })
       onClose()
     } catch {
       // toast handled by store

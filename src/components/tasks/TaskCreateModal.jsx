@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
+import { trackTaskCreated } from '../../lib/analytics-tracking'
 
 const CATEGORIES = [
   { value: 'learning', label: 'Learning', color: 'bg-blue-500' },
@@ -74,6 +75,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit }) {
     setSubmitting(true)
     try {
       await onSubmit(result.data)
+      trackTaskCreated({ category: result.data.category, priority: result.data.priority })
       setForm({ title: '', description: '', category: 'work', priority: 'medium', due_at: '', estimated_minutes: null })
       setErrors({})
       onClose()

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { trackUserSignup, identifyUser } from '../lib/analytics-tracking'
 
 export default function Signup() {
   const [email, setEmail] = useState('')
@@ -16,11 +17,13 @@ export default function Signup() {
     setError(null)
     setLoading(true)
 
-    const { error } = await signUp(email, password)
+    const { data, error } = await signUp(email, password)
     if (error) {
       setError(error.message)
       setLoading(false)
     } else {
+      trackUserSignup()
+      if (data?.user) identifyUser(data.user.id, { signup_date: new Date().toISOString() })
       navigate('/')
     }
   }

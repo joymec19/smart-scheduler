@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { identifyUser, trackSessionStart } from '../lib/analytics-tracking'
 
 export function useAuth() {
   const [user, setUser] = useState(null)
@@ -14,10 +15,14 @@ export function useAuth() {
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
+        if (event === 'SIGNED_IN' && session?.user) {
+          identifyUser(session.user.id)
+          trackSessionStart()
+        }
       }
     )
 

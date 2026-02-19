@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import useAnalyticsStore from '../stores/useAnalyticsStore'
+import { trackAnalyticsViewed } from '../lib/analytics-tracking'
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 const CAT_COLORS = {
@@ -119,6 +120,10 @@ export default function Analytics() {
   const navigate = useNavigate()
   const { stats, prevRate, loading, fetchStats } = useAnalyticsStore()
   const [range, setRange] = useState('this_week')
+
+  useEffect(() => {
+    trackAnalyticsViewed()
+  }, [])
 
   useEffect(() => {
     if (user) fetchStats(user.id, range)

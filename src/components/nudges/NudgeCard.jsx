@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import useNudgeStore from '../../stores/useNudgeStore'
+import { trackNudgeActed, trackNudgeDismissed } from '../../lib/analytics-tracking'
 
 const TYPE_META = {
   pattern: {
@@ -29,6 +30,7 @@ export default function NudgeCard({ nudge }) {
   const meta = TYPE_META[nudge.type] || TYPE_META.momentum
 
   async function handleAct() {
+    trackNudgeActed({ nudge_type: nudge.type })
     await actOnNudge(nudge.id)
     navigate(meta.actRoute)
   }
@@ -64,7 +66,7 @@ export default function NudgeCard({ nudge }) {
           ⏰
         </button>
         <button
-          onClick={() => dismissNudge(nudge.id)}
+          onClick={() => { trackNudgeDismissed({ nudge_type: nudge.type }); dismissNudge(nudge.id) }}
           className="bg-white/15 hover:bg-white/25 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors"
           aria-label="Dismiss"
         >

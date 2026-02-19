@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import useTaskStore from '../../stores/useTaskStore'
 import { suggestReschedule } from '../../lib/rescheduling'
+import { trackRescheduleAccepted, trackRescheduleRejected, trackTaskMissed } from '../../lib/analytics-tracking'
 
 function formatDateTime(iso) {
   if (!iso) return '—'
@@ -86,6 +87,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
         },
       })
 
+      trackRescheduleAccepted()
       toast.success('Task rescheduled!')
       onClose()
     } catch (e) {
@@ -97,6 +99,8 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
   }
 
   function handleCancelTask() {
+    trackTaskMissed()
+    trackRescheduleRejected()
     onMiss(task.id)
     onClose()
   }
