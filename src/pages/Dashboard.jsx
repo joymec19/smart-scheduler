@@ -292,6 +292,7 @@ export default function Dashboard() {
         </AnimatePresence>
 
         <motion.button
+          data-tour-id="tour-fab"
           whileTap={{ scale: 0.88 }}
           onClick={() => setFabOpen((v) => !v)}
           className="w-14 h-14 bg-gradient-to-r from-purple-500 to-violet-600 rounded-full shadow-xl flex items-center justify-center text-white"
