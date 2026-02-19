@@ -1,11 +1,31 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import TaskCard from './TaskCard'
+import { TaskSkeletonList } from '../Skeleton'
 
 const TABS = ['pending', 'completed', 'missed']
 
-export default function TaskList({ tasks, counts, loading, onComplete, onMiss, onTapTask, activeTab, onTabChange }) {
+const EMPTY_STATES = {
+  pending: {
+    emoji: '🌅',
+    title: 'Your day is wide open!',
+    subtitle: 'Add your first task to get started',
+  },
+  completed: {
+    emoji: '🎯',
+    title: 'Nothing completed yet',
+    subtitle: 'Finish a task to see it here',
+  },
+  missed: {
+    emoji: '🏆',
+    title: 'No missed tasks!',
+    subtitle: "You're crushing it today",
+  },
+}
+
+export default function TaskList({ tasks, counts, loading, error, onRetry, onComplete, onMiss, onTapTask, activeTab, onTabChange }) {
 
   const filtered = tasks.filter((t) => t.status === activeTab)
+  const empty = EMPTY_STATES[activeTab]
 
   return (
     <div className="flex flex-col gap-3">
@@ -32,17 +52,34 @@ export default function TaskList({ tasks, counts, loading, onComplete, onMiss, o
         ))}
       </div>
 
-      {/* Task list */}
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      {/* Error state */}
+      {error ? (
+        <div className="flex flex-col items-center py-12 text-center">
+          <span className="text-5xl mb-3">😕</span>
+          <p className="text-gray-700 font-medium">Couldn't load tasks</p>
+          <p className="text-gray-400 text-sm mt-1 mb-5">{error}</p>
+          {onRetry && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={onRetry}
+              className="bg-purple-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm"
+            >
+              Try Again
+            </motion.button>
+          )}
         </div>
+      ) : loading ? (
+        <TaskSkeletonList count={3} />
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 text-sm">
-          {activeTab === 'pending' && 'No pending tasks. Tap + to add one!'}
-          {activeTab === 'completed' && 'No completed tasks yet.'}
-          {activeTab === 'missed' && 'No missed tasks. Great job!'}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center py-14 text-center"
+        >
+          <span className="text-5xl mb-3">{empty.emoji}</span>
+          <p className="text-gray-700 font-semibold text-base">{empty.title}</p>
+          <p className="text-gray-400 text-sm mt-1">{empty.subtitle}</p>
+        </motion.div>
       ) : (
         <AnimatePresence mode="popLayout">
           {filtered.map((task) => (

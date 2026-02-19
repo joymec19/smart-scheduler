@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import useNoteStore from '../stores/useNoteStore'
 import NoteList from '../components/notes/NoteList'
+import { NoteSkeletonList } from '../components/Skeleton'
 
 const CATEGORIES = ['all', 'learning', 'work', 'health', 'personal', 'info', 'creative']
 
@@ -17,7 +19,7 @@ const CATEGORY_ICONS = {
 
 export default function Notes() {
   const { user } = useAuth()
-  const { notes, loading, fetchNotes, deleteNote } = useNoteStore()
+  const { notes, loading, error, fetchNotes, deleteNote } = useNoteStore()
   const [activeCategory, setActiveCategory] = useState('all')
 
   useEffect(() => {
@@ -63,10 +65,25 @@ export default function Notes() {
 
       {/* Content */}
       <div className="mt-5">
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-          </div>
+        {error ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center py-14 text-center px-8"
+          >
+            <span className="text-5xl mb-3">😕</span>
+            <p className="text-gray-700 font-semibold">Couldn't load notes</p>
+            <p className="text-gray-400 text-sm mt-1 mb-5">{error}</p>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => fetchNotes(user.id)}
+              className="bg-purple-600 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm"
+            >
+              Try Again
+            </motion.button>
+          </motion.div>
+        ) : loading ? (
+          <NoteSkeletonList count={4} />
         ) : (
           <NoteList notes={filtered} onDelete={deleteNote} />
         )}

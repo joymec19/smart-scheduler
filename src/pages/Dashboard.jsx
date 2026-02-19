@@ -7,6 +7,7 @@ import useNudgeStore from '../stores/useNudgeStore'
 import TaskCreateModal from '../components/tasks/TaskCreateModal'
 import QuickCaptureModal from '../components/notes/QuickCaptureModal'
 import NudgeCard from '../components/nudges/NudgeCard'
+import { DashboardTaskSkeleton, MetricCardSkeleton } from '../components/Skeleton'
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
 
@@ -115,12 +116,20 @@ export default function Dashboard() {
       {/* ── Metric cards — 4-up grid, overlaps header ── */}
       <div className="px-4 -mt-5">
         <div className="grid grid-cols-4 gap-2">
-          {metrics.map((m) => (
-            <div key={m.label} className={`${m.bg} rounded-xl p-3 text-center shadow-sm`}>
-              <p className={`${m.valueColor} text-xl font-bold leading-none`}>{m.value}</p>
-              <p className="text-gray-500 text-[10px] mt-1 leading-tight">{m.label}</p>
-            </div>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => <MetricCardSkeleton key={i} />)
+            : metrics.map((m) => (
+                <motion.div
+                  key={m.label}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
+                  className={`${m.bg} rounded-xl p-3 text-center shadow-sm`}
+                >
+                  <p className={`${m.valueColor} text-xl font-bold leading-none`}>{m.value}</p>
+                  <p className="text-gray-500 text-[10px] mt-1 leading-tight">{m.label}</p>
+                </motion.div>
+              ))}
         </div>
       </div>
 
@@ -137,19 +146,27 @@ export default function Dashboard() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-2">
+            <DashboardTaskSkeleton />
+            <DashboardTaskSkeleton />
+            <DashboardTaskSkeleton />
           </div>
         ) : topTasks.length === 0 ? (
-          <div className="bg-white rounded-xl p-6 text-center shadow-sm">
-            <p className="text-gray-400 text-sm">No pending tasks — you're all caught up!</p>
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-xl p-6 text-center shadow-sm"
+          >
+            <span className="text-4xl block mb-2">🌅</span>
+            <p className="text-gray-700 font-semibold text-sm">Your day is wide open!</p>
+            <p className="text-gray-400 text-xs mt-0.5">Add your first task to get started</p>
             <button
               onClick={() => setCreateOpen(true)}
-              className="mt-3 text-purple-600 text-sm font-medium"
+              className="mt-4 bg-purple-600 text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-sm active:scale-95 transition-transform"
             >
-              + Add your first task
+              + Add Task
             </button>
-          </div>
+          </motion.div>
         ) : (
           <div className="space-y-2">
             {topTasks.map((task, i) => (
@@ -226,9 +243,15 @@ export default function Dashboard() {
         </div>
 
         {activeNudges.length === 0 ? (
-          <div className="mx-4 bg-white rounded-xl p-5 text-center shadow-sm">
-            <p className="text-gray-400 text-sm">No nudges right now — great work!</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-4 bg-white rounded-xl p-5 text-center shadow-sm"
+          >
+            <span className="text-3xl block mb-1.5">✨</span>
+            <p className="text-gray-700 font-semibold text-sm">All caught up!</p>
+            <p className="text-gray-400 text-xs mt-0.5">No nudges right now — keep it up!</p>
+          </motion.div>
         ) : (
           <div className="flex gap-3 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: 'none' }}>
             {activeNudges.map((nudge) => (

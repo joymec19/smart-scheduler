@@ -12,8 +12,10 @@ const useNudgeStore = create((set, get) => ({
       const nudges = await nudgesApi.generateNudges(userId)
       set({ nudges, loading: false })
     } catch (err) {
+      // Nudges are supplemental — a failure just shows "All caught up!"
+      // Don't surface a toast that disrupts the dashboard experience.
+      console.warn('[nudges] fetchNudges error:', err?.message)
       set({ loading: false })
-      toast.error('Failed to load nudges')
     }
   },
 

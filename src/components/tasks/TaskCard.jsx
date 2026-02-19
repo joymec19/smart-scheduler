@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { memo, useState, useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import RescheduleModal from './RescheduleModal'
 
@@ -46,7 +46,7 @@ function formatEstimate(minutes) {
   return `${Math.round(minutes / 60)}h`
 }
 
-export default function TaskCard({ task, onComplete, onMiss, onTap }) {
+const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
   const x = useMotionValue(0)
   const [swiping, setSwiping] = useState(null)
   const [rescheduleOpen, setRescheduleOpen] = useState(false)
@@ -103,6 +103,7 @@ export default function TaskCard({ task, onComplete, onMiss, onTap }) {
         drag={task.status === 'pending' ? 'x' : false}
         dragConstraints={{ left: -120, right: 120 }}
         dragElastic={0.1}
+        whileHover={{ scale: 1.01 }}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         onTap={() => onTap?.(task)}
@@ -166,4 +167,6 @@ export default function TaskCard({ task, onComplete, onMiss, onTap }) {
     />
     </>
   )
-}
+})
+
+export default TaskCard

@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 
 export default function Tasks() {
   const { user } = useAuth()
-  const { tasks, loading, fetchTasks, addTask, markComplete, markMissed, getCounts } = useTaskStore()
+  const { tasks, loading, error, fetchTasks, addTask, markComplete, markMissed, getCounts } = useTaskStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
 
@@ -53,6 +53,8 @@ export default function Tasks() {
         tasks={tasks}
         counts={counts}
         loading={loading}
+        error={error}
+        onRetry={() => fetchTasks(user.id)}
         onComplete={handleComplete}
         onMiss={handleMiss}
         activeTab={activeTab}
