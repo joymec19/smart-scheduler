@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import useTaskStore from '../../stores/useTaskStore'
 import { suggestReschedule } from '../../lib/rescheduling'
 import { trackRescheduleAccepted, trackRescheduleRejected, trackTaskMissed } from '../../lib/analytics-tracking'
+import DecomposeWizard from '../decomposition/DecomposeWizard'
 
 function formatDateTime(iso) {
   if (!iso) return '—'
@@ -34,6 +35,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
   const [showPicker, setShowPicker]       = useState(false)
   const [adjustedDate, setAdjustedDate]   = useState('')
   const [submitting, setSubmitting]       = useState(false)
+  const [showWizard, setShowWizard]       = useState(false)
 
   // Reset + fetch whenever the modal opens for a new task
   useEffect(() => {
@@ -115,6 +117,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
     : suggestion?.suggested_datetime
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <>
@@ -217,8 +220,15 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
               </div>
             )}
 
+            {/* Orange rescheduled-times banner (above buttons) */}
+            {rescheduleCount >= 3 && (
+              <div className="mt-5 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-orange-700 text-sm font-medium">
+                This task has been rescheduled {rescheduleCount} times
+              </div>
+            )}
+
             {/* Action buttons */}
-            <div className="mt-6 flex flex-col gap-2.5">
+            <div className="mt-3 flex flex-col gap-2.5">
               <button
                 onClick={handleAccept}
                 disabled={submitting || loadingSuggestion || !suggestion}
@@ -241,10 +251,36 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
               >
                 Cancel Task (Mark Missed)
               </button>
+
+              {/* Decompose button — only when rescheduled 3+ times */}
+              {rescheduleCount >= 3 && (
+                <button
+                  onClick={() => setShowWizard(true)}
+                  className="relative w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 overflow-hidden active:scale-95 transition-transform"
+                >
+                  {/* Gradient border via stacked divs */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl" />
+                  <span className="absolute inset-[2px] bg-white rounded-[10px]" />
+                  <span className="relative flex items-center gap-2">
+                    <span>✂️</span>
+                    <span className="bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                      Want me to break it down?
+                    </span>
+                  </span>
+                </button>
+              )}
             </div>
           </motion.div>
         </>
       )}
     </AnimatePresence>
+
+    {/* DecomposeWizard — mounts outside the sheet so it outlives it */}
+    <DecomposeWizard
+      open={showWizard}
+      task={task}
+      onClose={() => { setShowWizard(false); onClose() }}
+    />
+    </>
   )
 }
