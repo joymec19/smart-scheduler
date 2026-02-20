@@ -9,11 +9,12 @@ import { getPatternSuggestion } from '../lib/decomposition-suggestions'
 
 const useDecompositionStore = create((set, get) => ({
   // ── State ──────────────────────────────────────────────────────────────────
-  wizardStep: 1,
+  wizardStep: 1,           // 1 | 2 | 3
+  confirmed: false,        // true once subtasks are saved (step 3 success screen)
   clarifyingAnswer: '',
   generatedSubtasks: [],
   selectedTemplate: null,
-  granularity: 'balanced',
+  granularity: 'balanced', // 'fewer_steps' | 'balanced' | 'more_detail'
   isLoading: false,
   patternSuggestion: null,
 
@@ -26,6 +27,7 @@ const useDecompositionStore = create((set, get) => ({
   startWizard: async (task) => {
     set({
       wizardStep: 1,
+      confirmed: false,
       clarifyingAnswer: '',
       generatedSubtasks: [],
       selectedTemplate: null,
@@ -47,25 +49,27 @@ const useDecompositionStore = create((set, get) => ({
 
   setClarifyingAnswer: (answer) => set({ clarifyingAnswer: answer }),
 
-  generatePreview: async (task, answer) => {
-    const { granularity } = get()
-    set({ isLoading: true })
+  // Called after user picks a granularity card in Step 2.
+  // Sets the chosen level, navigates to Step 3, and generates subtasks.
+  loadSubtasksForGranularity: async (task, answer, granularity) => {
+    set({ granularity, clarifyingAnswer: answer, isLoading: true, wizardStep: 3, confirmed: false })
     try {
       const raw = await generateSubtasks(task, answer, {
         granularity_preference: granularity === 'balanced' ? undefined : granularity,
       })
       const adjusted = await adjustForUserPatterns(task.user_id, raw)
-      set({ generatedSubtasks: adjusted, wizardStep: 2 })
+      set({ generatedSubtasks: adjusted })
     } catch (err) {
-      console.error('[decompositionStore] generatePreview:', err)
+      console.error('[decompositionStore] loadSubtasksForGranularity:', err)
     } finally {
       set({ isLoading: false })
     }
   },
 
+  // Kept for back-compat; alias to loadSubtasksForGranularity using stored task/answer.
   setGranularity: async (level) => {
     const { _currentTask, clarifyingAnswer } = get()
-    set({ granularity: level, isLoading: true })
+    set({ granularity: level, isLoading: true, wizardStep: 3, confirmed: false })
     try {
       const raw = await generateSubtasks(_currentTask, clarifyingAnswer, {
         granularity_preference: level === 'balanced' ? undefined : level,
@@ -125,7 +129,7 @@ const useDecompositionStore = create((set, get) => ({
       if (result.logId) {
         await learnFromEdits(result.logId, [])
       }
-      set({ wizardStep: 3, _decompositionLogId: result.logId })
+      set({ confirmed: true, _decompositionLogId: result.logId })
       return result
     } catch (err) {
       console.error('[decompositionStore] confirmDecomposition:', err)
@@ -138,6 +142,7 @@ const useDecompositionStore = create((set, get) => ({
   resetWizard: () =>
     set({
       wizardStep: 1,
+      confirmed: false,
       clarifyingAnswer: '',
       generatedSubtasks: [],
       selectedTemplate: null,
