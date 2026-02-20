@@ -167,13 +167,13 @@ const useTaskStore = create((set, get) => ({
   },
 
   // Computed helpers
-  getByStatus: (status) => get().tasks.filter((t) => t.status === status),
+  getByStatus: (status) => get().tasks.filter((t) => t.status === status && !t.is_subtask),
   getCounts: () => {
-    const tasks = get().tasks
+    const parentTasks = get().tasks.filter((t) => !t.is_subtask)
     return {
-      pending: tasks.filter((t) => t.status === 'pending').length,
-      completed: tasks.filter((t) => t.status === 'completed').length,
-      missed: tasks.filter((t) => t.status === 'missed').length,
+      pending: parentTasks.filter((t) => t.status === 'pending').length,
+      completed: parentTasks.filter((t) => t.status === 'completed').length,
+      missed: parentTasks.filter((t) => t.status === 'missed').length,
     }
   },
 }))

@@ -4,6 +4,8 @@ import { TaskSkeletonList } from '../Skeleton'
 
 const TABS = ['pending', 'completed', 'missed']
 
+const SEVEN_DAYS_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
 const EMPTY_STATES = {
   pending: {
     emoji: '🌅',
@@ -12,19 +14,36 @@ const EMPTY_STATES = {
   },
   completed: {
     emoji: '🎯',
-    title: 'Nothing completed yet',
+    title: 'Nothing completed in the last 7 days',
     subtitle: 'Finish a task to see it here',
   },
   missed: {
     emoji: '🏆',
-    title: 'No missed tasks!',
-    subtitle: "You're crushing it today",
+    title: 'No missed tasks in the last 7 days!',
+    subtitle: "You're crushing it",
   },
 }
 
 export default function TaskList({ tasks, counts, loading, error, onRetry, onComplete, onMiss, onTapTask, activeTab, onTabChange }) {
 
-  const filtered = tasks.filter((t) => t.status === activeTab)
+  const parentTasks = tasks.filter((t) => !t.is_subtask)
+
+  const tabTasks = {
+    pending: parentTasks.filter((t) => t.status === 'pending'),
+    completed: parentTasks.filter(
+      (t) => t.status === 'completed' && t.completed_at && new Date(t.completed_at) >= SEVEN_DAYS_AGO
+    ),
+    missed: parentTasks.filter(
+      (t) => t.status === 'missed' && (!t.due_at || new Date(t.due_at) >= SEVEN_DAYS_AGO)
+    ),
+  }
+
+  const filtered = tabTasks[activeTab] || []
+  const tabCounts = {
+    pending: tabTasks.pending.length,
+    completed: tabTasks.completed.length,
+    missed: tabTasks.missed.length,
+  }
   const empty = EMPTY_STATES[activeTab]
 
   return (
@@ -46,11 +65,16 @@ export default function TaskList({ tasks, counts, loading, error, onRetry, onCom
           >
             {tab}
             <span className="ml-1 text-xs text-gray-400">
-              {counts[tab] ?? 0}
+              {tabCounts[tab] ?? 0}
             </span>
           </button>
         ))}
       </div>
+
+      {/* Time window hint for completed / missed */}
+      {(activeTab === 'completed' || activeTab === 'missed') && (
+        <p className="text-xs text-gray-400 text-right -mt-1">Last 7 days</p>
+      )}
 
       {/* Error state */}
       {error ? (
