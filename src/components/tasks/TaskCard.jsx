@@ -1,5 +1,5 @@
-import { memo, useState, useRef } from 'react'
-import { motion, useMotionValue, useTransform } from 'framer-motion'
+import { memo, useState } from 'react'
+import { motion } from 'framer-motion'
 import RescheduleModal from './RescheduleModal'
 import DecomposeWizard from '../decomposition/DecomposeWizard'
 import { trackTaskCompleted } from '../../lib/analytics-tracking'
@@ -29,8 +29,6 @@ const PRIORITY_STYLES = {
   low: 'bg-gray-100 text-gray-600',
 }
 
-const SWIPE_THRESHOLD = 80
-
 function isOverdue(dueAt) {
   if (!dueAt) return false
   return new Date(dueAt) < new Date()
@@ -58,50 +56,107 @@ function formatEstimate(minutes) {
   return `${Math.round(minutes / 60)}h`
 }
 
+// ── SubtaskActionRow — circle checkbox + tappable time edit ────────────────────
+function SubtaskActionRow({ sub, onComplete }) {
+  const { updateTask } = useTaskStore()
+  const [editingTime, setEditingTime] = useState(false)
+  const [timeVal, setTimeVal] = useState(sub.estimated_minutes ?? sub.estimatedMinutes ?? 15)
+  const isCompleted = sub.status === 'completed'
+
+  function handleTimeSubmit() {
+    const mins = Math.max(1, Number(timeVal))
+    updateTask(sub.id, { estimated_minutes: mins })
+    setTimeVal(mins)
+    setEditingTime(false)
+  }
+
+  return (
+    <div className="flex items-center gap-2 py-1">
+      {/* Circle checkbox */}
+      <button
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); if (!isCompleted) onComplete(sub.id) }}
+        disabled={isCompleted}
+        className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+          isCompleted
+            ? 'bg-green-500 border-green-500'
+            : 'border-gray-300 hover:border-purple-400 active:scale-90'
+        }`}
+        aria-label={isCompleted ? 'Completed' : 'Mark complete'}
+      >
+        {isCompleted && <span className="text-white text-[9px] font-bold">✓</span>}
+      </button>
+
+      {/* Title */}
+      <span className={`flex-1 min-w-0 text-xs leading-snug truncate ${
+        isCompleted ? 'line-through text-gray-400' : 'text-gray-600'
+      }`}>
+        {sub.title}
+        {sub.is_blocking && !isCompleted && (
+          <span className="ml-1 text-amber-400 text-[10px]">🔒</span>
+        )}
+      </span>
+
+      {/* Tappable time label / inline editor */}
+      {editingTime ? (
+        <div
+          className="flex items-center gap-0.5 shrink-0"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <input
+            autoFocus
+            type="number"
+            min={1}
+            max={480}
+            value={timeVal}
+            onChange={(e) => setTimeVal(e.target.value)}
+            onBlur={handleTimeSubmit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleTimeSubmit()
+              if (e.key === 'Escape') setEditingTime(false)
+            }}
+            className="w-10 text-xs text-center border border-purple-400 rounded px-1 py-0.5 focus:outline-none"
+          />
+          <span className="text-[10px] text-gray-400">m</span>
+        </div>
+      ) : (
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); if (!isCompleted) setEditingTime(true) }}
+          disabled={isCompleted}
+          className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-lg transition-colors ${
+            isCompleted
+              ? 'text-gray-300'
+              : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+          }`}
+        >
+          {formatEstimate(sub.estimated_minutes ?? sub.estimatedMinutes) ?? '—'}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── TaskCard ───────────────────────────────────────────────────────────────────
 const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
-  const x = useMotionValue(0)
-  const [swiping, setSwiping]         = useState(null)
   const [rescheduleOpen, setRescheduleOpen] = useState(false)
   const [wizardOpen, setWizardOpen]   = useState(false)
   const [expanded, setExpanded]       = useState(false)
-  const containerRef = useRef(null)
 
-  // Derive subtasks from the store (avoids extra Supabase calls)
-  const { tasks: allTasks } = useTaskStore()
-  const subtasks          = allTasks.filter((t) => t.parent_task_id === task.id && t.is_subtask)
-  const completedSubs     = subtasks.filter((t) => t.status === 'completed')
-  // Sibling count — needed when this card IS a subtask
-  const siblingCount      = task.is_subtask
+  const { tasks: allTasks, markComplete: markSubtaskComplete } = useTaskStore()
+  const subtasks      = allTasks.filter((t) => t.parent_task_id === task.id && t.is_subtask)
+  const completedSubs = subtasks.filter((t) => t.status === 'completed')
+  const siblingCount  = task.is_subtask
     ? allTasks.filter((t) => t.parent_task_id === task.parent_task_id && t.is_subtask).length
     : 0
-
-  const bgColor = useTransform(x, [-120, -SWIPE_THRESHOLD, 0, SWIPE_THRESHOLD, 120], [
-    'rgba(245, 158, 11, 0.3)',
-    'rgba(245, 158, 11, 0.2)',
-    'rgba(0,0,0,0)',
-    'rgba(34, 197, 94, 0.2)',
-    'rgba(34, 197, 94, 0.3)',
-  ])
 
   const overdue         = task.status === 'pending' && isOverdue(task.due_at)
   const dueLabel        = formatDue(task.due_at)
   const estimateLabel   = formatEstimate(task.estimated_minutes)
   const rescheduleCount = task.reschedule_count || 0
 
-  function handleDragEnd(_, info) {
-    if (info.offset.x > SWIPE_THRESHOLD && task.status === 'pending') {
-      trackTaskCompleted({ was_overdue: isOverdue(task.due_at) })
-      onComplete?.(task.id)
-    } else if (info.offset.x < -SWIPE_THRESHOLD && task.status === 'pending') {
-      setRescheduleOpen(true)
-    }
-    setSwiping(null)
-  }
-
-  function handleDrag(_, info) {
-    if (info.offset.x > 30) setSwiping('complete')
-    else if (info.offset.x < -30) setSwiping('miss')
-    else setSwiping(null)
+  async function handleSubtaskComplete(subtaskId) {
+    await markSubtaskComplete(subtaskId, null)
   }
 
   return (
@@ -113,42 +168,20 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
         : ''
     }>
     <motion.div
-      ref={containerRef}
-      style={{ backgroundColor: bgColor }}
-      className="relative rounded-xl overflow-hidden"
+      whileTap={{ scale: 0.99 }}
+      className={`
+        relative rounded-xl shadow-sm hover:shadow-md transition-all
+        bg-white flex flex-col cursor-pointer
+        ${overdue ? 'ring-1 ring-amber-300' : ''}
+      `}
+      onClick={() => onTap?.(task)}
     >
-      {/* Swipe hints */}
-      {swiping === 'complete' && (
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500 font-semibold text-sm">
-          Complete
-        </div>
-      )}
-      {swiping === 'miss' && (
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500 font-semibold text-sm">
-          Reschedule
-        </div>
-      )}
-
-      <motion.div
-        style={{ x }}
-        drag={task.status === 'pending' ? 'x' : false}
-        dragConstraints={{ left: -120, right: 120 }}
-        dragElastic={0.1}
-        whileHover={{ scale: 1.01 }}
-        onDrag={handleDrag}
-        onDragEnd={handleDragEnd}
-        onTap={() => onTap?.(task)}
-        className={`
-          relative rounded-xl shadow-sm hover:shadow-md transition-all
-          bg-white flex items-stretch min-h-[72px] cursor-pointer
-          ${overdue ? 'ring-1 ring-amber-300' : ''}
-        `}
-      >
+      <div className="flex items-stretch min-h-[72px]">
         {/* Category color stripe */}
         <div className={`w-1.5 shrink-0 rounded-l-xl ${CATEGORY_COLORS[task.category] || 'bg-gray-400'}`} />
 
         <div className="flex-1 p-3 min-w-0">
-          {/* Subtask step label — only visible when this card IS a subtask */}
+          {/* Subtask step label */}
           {task.is_subtask && (
             <div className="flex items-center gap-1.5 mb-1">
               <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
@@ -201,7 +234,7 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
             )}
           </div>
 
-          {/* Subtask accordion — visible on parent tasks that have subtasks */}
+          {/* Subtask accordion */}
           {!task.is_subtask && subtasks.length > 0 && (
             <div className="mt-2">
               <button
@@ -224,29 +257,22 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
               </button>
 
               {expanded && (
-                <div className="mt-1.5 space-y-1 pl-1">
+                <div className="mt-1.5 space-y-0.5 pl-1">
                   {[...subtasks]
                     .sort((a, b) => (a.subtask_order || 0) - (b.subtask_order || 0))
                     .map((sub) => (
-                      <div key={sub.id} className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span className={sub.status === 'completed' ? 'text-green-500' : 'text-gray-300'}>
-                          {sub.status === 'completed' ? '✓' : '○'}
-                        </span>
-                        <span className={sub.status === 'completed' ? 'line-through text-gray-400' : ''}>
-                          {sub.title}
-                        </span>
-                        {sub.is_blocking && (
-                          <span className="text-amber-400 text-[10px]">🔒</span>
-                        )}
-                      </div>
+                      <SubtaskActionRow
+                        key={sub.id}
+                        sub={sub}
+                        onComplete={handleSubtaskComplete}
+                      />
                     ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* "Break into subtasks" — visible only on non-subtask pending tasks
-               with reschedule_count < 3 and no existing subtasks */}
+          {/* "Break into subtasks" */}
           {!task.is_subtask && rescheduleCount < 3 && subtasks.length === 0 && task.status === 'pending' && (
             <button
               onPointerDown={(e) => e.stopPropagation()}
@@ -257,7 +283,32 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
             </button>
           )}
         </div>
-      </motion.div>
+      </div>
+
+      {/* Action buttons — only for pending tasks */}
+      {task.status === 'pending' && (
+        <div
+          className="flex border-t border-gray-100 divide-x divide-gray-100"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              trackTaskCompleted({ was_overdue: isOverdue(task.due_at) })
+              onComplete?.(task.id)
+            }}
+            className="flex-1 py-2.5 text-xs font-semibold text-green-600 hover:bg-green-50 active:bg-green-100 transition-colors rounded-bl-xl min-h-[40px]"
+          >
+            ✓ Complete
+          </button>
+          <button
+            onClick={() => setRescheduleOpen(true)}
+            className="flex-1 py-2.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 active:bg-amber-100 transition-colors rounded-br-xl min-h-[40px]"
+          >
+            ⟳ Reschedule
+          </button>
+        </div>
+      )}
     </motion.div>
     </div>{/* /indent wrapper */}
 

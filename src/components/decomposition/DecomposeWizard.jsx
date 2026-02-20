@@ -1,5 +1,7 @@
 // DecomposeWizard.jsx — 3-step modal for task decomposition
-// Triggered from RescheduleModal (reschedule_count >= 3) or TaskCard direct button.
+// Step 1: Clarifying question
+// Step 2: Granularity picker (3 cards with icons + explanations)
+// Step 3: Proposed subtask breakdown (editable, chosen granularity locked)
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -31,9 +33,24 @@ const CATEGORY_PLACEHOLDER = {
 }
 
 const GRANULARITY = [
-  { value: 'fewer_steps', label: 'Fewer steps' },
-  { value: 'balanced',    label: 'Balanced'    },
-  { value: 'more_detail', label: 'More detail' },
+  {
+    value: 'fewer_steps',
+    label: 'Fewer Steps',
+    icon:  '⚡',
+    desc:  'Quick wins — 2–3 focused actions. Great for tight deadlines or low-energy days.',
+  },
+  {
+    value: 'balanced',
+    label: 'Balanced',
+    icon:  '⚖️',
+    desc:  'Clear progress — 4–6 well-sized steps. The default for most tasks.',
+  },
+  {
+    value: 'more_detail',
+    label: 'More Detail',
+    icon:  '🔬',
+    desc:  'Deep breakdown — 7+ granular steps. Best for complex or unfamiliar work.',
+  },
 ]
 
 // ── Framer Motion slide variants ───────────────────────────────────────────────
@@ -65,7 +82,7 @@ function firstScheduledTime(task) {
   })
 }
 
-// ── SubtaskRow — editable row used in Step 2 ──────────────────────────────────
+// ── SubtaskRow — editable row used in Step 3 ──────────────────────────────────
 function SubtaskRow({ sub, idx, total, category, onUpdate, onDelete, onMove }) {
   const [editingTitle, setEditingTitle] = useState(false)
   const stripe = CATEGORY_BG[category] || 'bg-gray-400'
@@ -150,22 +167,22 @@ export default function DecomposeWizard({ open, task, onClose }) {
   const { fetchTasks } = useTaskStore()
   const answerRef     = useRef(null)
 
-  const [step,            setStep]            = useState(1)
-  const [dir,             setDir]             = useState(1)
-  const [answer,          setAnswer]          = useState('')
-  const [patternHint,     setPatternHint]     = useState(null)
-  const [granularity,     setGranularity]     = useState('balanced')
-  const [subtasks,        setSubtasks]        = useState([])
-  const [loadingSteps,    setLoadingSteps]    = useState(false)
-  const [saving,          setSaving]          = useState(false)
-  const [savedSubtasks,   setSavedSubtasks]   = useState([])
+  const [step,          setStep]          = useState(1)
+  const [dir,           setDir]           = useState(1)
+  const [answer,        setAnswer]        = useState('')
+  const [patternHint,   setPatternHint]   = useState(null)
+  const [granularity,   setGranularity]   = useState('balanced')
+  const [subtasks,      setSubtasks]      = useState([])
+  const [loadingSteps,  setLoadingSteps]  = useState(false)
+  const [saving,        setSaving]        = useState(false)
+  const [savedSubtasks, setSavedSubtasks] = useState([])
+  const [confirmed,     setConfirmed]     = useState(false)
 
   const template           = task ? (TEMPLATES[task.category] ?? TEMPLATES.work) : null
   const clarifyingQuestion = template?.clarifyingQuestion ?? 'What does completing this task mean?'
   const placeholder        = CATEGORY_PLACEHOLDER[task?.category] ?? 'Describe what done looks like…'
   const totalEstimate      = subtasks.reduce((s, t) => s + (t.estimatedMinutes || 0), 0)
-  // Lock non-selected granularity once subtasks have been generated
-  const granularityLocked  = !loadingSteps && subtasks.length > 0
+  const selectedGranularity = GRANULARITY.find((g) => g.value === granularity)
 
   // Reset state and fetch pattern hint when wizard opens
   useEffect(() => {
@@ -177,6 +194,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
     setSubtasks([])
     setSavedSubtasks([])
     setPatternHint(null)
+    setConfirmed(false)
 
     if (task.user_id) {
       getPatternSuggestion(task.user_id, task.category)
@@ -208,10 +226,16 @@ export default function DecomposeWizard({ open, task, onClose }) {
   }
 
   // ── Navigation ───────────────────────────────────────────────────────────────
-  async function goStep2() {
+  function goStep2() {
     setDir(1)
     setStep(2)
-    await loadSubtasks(granularity)
+  }
+
+  async function goStep3(gran) {
+    setGranularity(gran)
+    setDir(1)
+    setStep(3)
+    await loadSubtasks(gran)
   }
 
   function goBack() {
@@ -232,8 +256,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
       )
       setSavedSubtasks(created ?? subtasks)
       if (task.user_id) await fetchTasks(task.user_id)
-      setDir(1)
-      setStep(3)
+      setConfirmed(true)
     } catch (e) {
       toast.error('Failed to save subtasks')
       console.error('[DecomposeWizard] saveSubtasks:', e)
@@ -297,28 +320,28 @@ export default function DecomposeWizard({ open, task, onClose }) {
             onClick={onClose}
           />
 
-          {/* Modal card */}
+          {/* Modal card — anchored near top so CTAs are always on-screen */}
           <motion.div
             key="dw-modal"
-            initial={{ opacity: 0, scale: 0.95, y: 24 }}
-            animate={{ opacity: 1, scale: 1,    y: 0  }}
-            exit={{    opacity: 0, scale: 0.95, y: 24 }}
+            initial={{ opacity: 0, scale: 0.95, y: -16 }}
+            animate={{ opacity: 1, scale: 1,    y: 0   }}
+            exit={{    opacity: 0, scale: 0.95, y: -16 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl z-50 max-w-lg mx-auto overflow-hidden max-h-[88vh] flex flex-col"
+            className="fixed inset-x-4 top-[4%] bg-white rounded-2xl shadow-2xl z-50 max-w-lg mx-auto max-h-[92vh] flex flex-col"
           >
             {/* Progress bar */}
-            <div className="h-1 bg-gray-100">
+            <div className="h-1 bg-gray-100 rounded-t-2xl overflow-hidden shrink-0">
               <motion.div
                 className="h-full bg-gradient-to-r from-purple-500 to-violet-600"
-                animate={{ width: `${(step / 3) * 100}%` }}
+                animate={{ width: confirmed ? '100%' : `${(step / 3) * 100}%` }}
                 transition={{ ease: 'easeInOut', duration: 0.35 }}
               />
             </div>
 
             {/* Header row */}
-            <div className="flex items-center justify-between px-5 pt-4">
+            <div className="flex items-center justify-between px-5 pt-4 shrink-0">
               <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-                Step {step} of 3
+                {confirmed ? 'Done!' : `Step ${step} of 3`}
               </span>
               <button
                 onClick={onClose}
@@ -341,7 +364,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     animate="center"
                     exit="exit"
                     transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                    className="px-5 pt-3 pb-7"
+                    className="px-5 pt-3 pb-6 overflow-y-auto"
                   >
                     <h2 className="text-lg font-bold text-gray-800">
                       Let me understand this better…
@@ -388,7 +411,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                   </motion.div>
                 )}
 
-                {/* ─── STEP 2 — Proposed breakdown ─── */}
+                {/* ─── STEP 2 — Granularity picker ─── */}
                 {step === 2 && (
                   <motion.div
                     key="s2"
@@ -398,35 +421,58 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     animate="center"
                     exit="exit"
                     transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                    className="px-5 pt-3 pb-6 overflow-y-auto"
+                  >
+                    <h2 className="text-lg font-bold text-gray-800">How detailed should the plan be?</h2>
+                    <p className="text-sm text-gray-500 mt-0.5">Choose the breakdown style that fits your day.</p>
+
+                    <div className="mt-5 space-y-3">
+                      {GRANULARITY.map((opt) => (
+                        <motion.button
+                          key={opt.value}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => goStep3(opt.value)}
+                          className="w-full text-left bg-white border-2 border-gray-100 hover:border-purple-400 hover:shadow-sm rounded-2xl p-4 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl shrink-0">{opt.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 text-sm">{opt.label}</p>
+                              <p className="text-xs text-gray-500 mt-0.5 leading-snug">{opt.desc}</p>
+                            </div>
+                            <span className="text-gray-300 text-lg shrink-0">›</span>
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={goBack}
+                      className="mt-4 w-full bg-gray-100 text-gray-600 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
+                    >
+                      ← Back
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* ─── STEP 3 — Subtask editor (not yet confirmed) ─── */}
+                {step === 3 && !confirmed && (
+                  <motion.div
+                    key="s3-edit"
+                    custom={dir}
+                    variants={slide}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                     className="px-5 pt-3 pb-5 flex flex-col flex-1 min-h-0"
                   >
-                    <h2 className="text-lg font-bold text-gray-800 shrink-0">Proposed Breakdown</h2>
-
-                    {/* Granularity toggle — locked once subtasks are generated */}
-                    <div className="mt-3 shrink-0 flex bg-gray-100 rounded-xl p-1 gap-1">
-                      {GRANULARITY.map((opt) => {
-                        const isSelected = granularity === opt.value
-                        const isLocked   = granularityLocked && !isSelected
-                        return (
-                          <button
-                            key={opt.value}
-                            disabled={loadingSteps || isLocked}
-                            onClick={() => {
-                              setGranularity(opt.value)
-                              loadSubtasks(opt.value)
-                            }}
-                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all min-h-[32px] ${
-                              isSelected
-                                ? 'bg-white text-purple-600 shadow-sm'
-                                : isLocked
-                                ? 'text-gray-300 cursor-not-allowed'
-                                : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                          >
-                            {opt.label}
-                          </button>
-                        )
-                      })}
+                    {/* Header with locked granularity badge */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <h2 className="text-lg font-bold text-gray-800">Proposed Breakdown</h2>
+                      <span className="ml-auto flex items-center gap-1 text-xs bg-purple-100 text-purple-600 px-2.5 py-0.5 rounded-full font-medium shrink-0">
+                        {selectedGranularity?.icon} {selectedGranularity?.label}
+                      </span>
                     </div>
 
                     {/* Inline pattern hint */}
@@ -480,35 +526,32 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     </div>
 
                     {/* CTA row */}
-                    <div className="mt-4 shrink-0 flex gap-2">
+                    <div className="mt-3 shrink-0 flex gap-2">
                       <button
                         onClick={goBack}
                         className="flex-1 bg-gray-100 text-gray-600 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
                       >
-                        Back
+                        ← Back
                       </button>
                       <button
                         onClick={handleSave}
                         disabled={saving || loadingSteps || subtasks.length === 0}
                         className="flex-[2] bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 active:scale-95 transition-transform text-sm min-h-[44px]"
                       >
-                        {saving ? 'Saving…' : 'Looks good, create subtasks'}
+                        {saving ? 'Saving…' : '✓ Looks good, create subtasks'}
                       </button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* ─── STEP 3 — Confirmation ─── */}
-                {step === 3 && (
+                {/* ─── STEP 3 — Success confirmation ─── */}
+                {step === 3 && confirmed && (
                   <motion.div
-                    key="s3"
-                    custom={dir}
-                    variants={slide}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                    className="px-5 pt-3 pb-7"
+                    key="s3-confirm"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ type: 'spring', damping: 24, stiffness: 280 }}
+                    className="px-5 pt-3 pb-6 overflow-y-auto"
                   >
                     {/* Success header */}
                     <div className="text-center">
@@ -524,7 +567,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     </div>
 
                     {/* Subtask timeline */}
-                    <div className="mt-5 max-h-[40vh] overflow-y-auto">
+                    <div className="mt-5 max-h-[36vh] overflow-y-auto">
                       <SubtaskTimeline
                         subtasks={savedSubtasks.length ? savedSubtasks : subtasks}
                         category={task.category}
@@ -541,7 +584,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                       onClick={handleDone}
                       className="mt-5 w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold py-3.5 rounded-xl active:scale-95 transition-transform min-h-[44px]"
                     >
-                      Done
+                      Go to Tasks →
                     </button>
                   </motion.div>
                 )}

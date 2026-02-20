@@ -50,7 +50,7 @@ export default function Tasks() {
           Tasks
         </h1>
         <p className="text-xs text-gray-400 mt-0.5">
-          Swipe right to complete, left to miss
+          Tap Complete or Reschedule on each task
         </p>
       </div>
 
