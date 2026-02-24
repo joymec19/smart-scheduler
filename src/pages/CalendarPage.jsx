@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import moment from 'moment'
@@ -9,6 +10,11 @@ import useTaskStore from '../stores/useTaskStore'
 import { useAuth } from '../hooks/useAuth'
 import TaskCreateModal from '../components/tasks/TaskCreateModal'
 import CalendarEventCard from '../components/calendar/CalendarEventCard'
+import {
+  saveTokensFromSession,
+  getStoredTokens,
+  fetchGoogleCalendarEvents,
+} from '../lib/google-calendar'
 
 const localizer = momentLocalizer(moment)
 const DnDCalendar = withDragAndDrop(Calendar)
@@ -90,38 +96,92 @@ function CalendarToolbar({ date, view, onNavigate, onView, label }) {
 export default function CalendarPage() {
   const { user } = useAuth()
   const { tasks, fetchTasks, addTask, updateTaskTime } = useTaskStore()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [view, setView] = useState(Views.DAY)
-  const [date, setDate] = useState(new Date())
+  const [view, setView]               = useState(Views.DAY)
+  const [date, setDate]               = useState(new Date())
   const [createModal, setCreateModal] = useState({ open: false, defaultDueAt: '' })
+  const [gcalTokens, setGcalTokens]   = useState(null)
+  const [externalEvents, setExternalEvents] = useState([])
 
   // Load tasks on mount
   useEffect(() => {
     if (user) fetchTasks(user.id)
   }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Handle OAuth redirect: ?connected=true
+  useEffect(() => {
+    if (!user) return
+    if (searchParams.get('connected') === 'true') {
+      saveTokensFromSession(user.id)
+        .then((t) => {
+          if (t) {
+            setGcalTokens(t)
+            toast.success('Google Calendar connected!')
+          }
+        })
+        .catch(() => toast.error('Could not save Google Calendar tokens'))
+        .finally(() => {
+          // Remove query param without full reload
+          setSearchParams({}, { replace: true })
+        })
+    } else {
+      // Check if already connected
+      getStoredTokens(user.id).then(setGcalTokens)
+    }
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch external Google events whenever tokens or date/view changes
+  useEffect(() => {
+    if (!gcalTokens || !user) return
+    const start = moment(date).startOf(view === Views.MONTH ? 'month' : view === Views.WEEK ? 'week' : 'day').subtract(1, 'day').toDate()
+    const end   = moment(date).endOf(view === Views.MONTH ? 'month' : view === Views.WEEK ? 'week' : 'day').add(1, 'day').toDate()
+    fetchGoogleCalendarEvents(gcalTokens, user.id, { start, end })
+      .then(setExternalEvents)
+      .catch(() => setExternalEvents([]))
+  }, [gcalTokens, date, view, user]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Map tasks → calendar events (skip subtasks, skip tasks without due_at)
-  const events = useMemo(
+  const taskEvents = useMemo(
     () =>
       tasks
         .filter((t) => !t.is_subtask && t.due_at)
         .map((t) => ({
-          id: t.id,
-          title: t.title,
-          start: new Date(t.due_at),
-          end: new Date(
-            new Date(t.due_at).getTime() + (t.estimated_minutes || 30) * 60000
-          ),
+          id:       t.id,
+          title:    t.title,
+          start:    new Date(t.due_at),
+          end:      new Date(new Date(t.due_at).getTime() + (t.estimated_minutes || 30) * 60000),
           category: t.category,
           priority: t.priority,
-          status: t.status,
+          status:   t.status,
           resource: 'task',
         })),
     [tasks]
   )
 
-  // Style events by category
+  // Merge task events + read-only external Google events
+  const events = useMemo(
+    () => [...taskEvents, ...externalEvents],
+    [taskEvents, externalEvents]
+  )
+
+  // Style events by category; external Google events get a gray style
   const eventPropGetter = useCallback((event) => {
+    if (event.isExternal) {
+      return {
+        style: {
+          backgroundColor: 'rgba(148,163,184,0.35)',
+          borderLeft: '3px solid #94a3b8',
+          borderTop: 'none', borderRight: 'none', borderBottom: 'none',
+          borderRadius: '6px',
+          color: '#94a3b8',
+          fontSize: '12px',
+          padding: '0',
+          cursor: 'default',
+          pointerEvents: 'none',
+        },
+      }
+    }
     const bg = CATEGORY_BG[event.category] || CATEGORY_BG.work
     const border = CATEGORY_BORDER[event.category] || CATEGORY_BORDER.work
     return {
@@ -178,11 +238,19 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col gap-3 pb-24">
       {/* Header */}
-      <div className="px-1 pt-1">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Calendar</h1>
-        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
-          Drag tasks to reschedule · Tap a slot to add
-        </p>
+      <div className="px-1 pt-1 flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Calendar</h1>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+            Drag tasks to reschedule · Tap a slot to add
+          </p>
+        </div>
+        {gcalTokens && (
+          <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/25 mt-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Google synced
+          </span>
+        )}
       </div>
 
       {/* Calendar container */}
@@ -235,6 +303,12 @@ export default function CalendarPage() {
             <span className="capitalize">{cat}</span>
           </span>
         ))}
+        {gcalTokens && (
+          <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
+            <span className="w-2 h-2 rounded-full bg-slate-400" />
+            <span>Google events</span>
+          </span>
+        )}
       </div>
 
       {/* Task create modal */}

@@ -1,4 +1,12 @@
 import { supabase } from './supabase'
+import { getStoredTokens, syncTaskToGoogleCalendar } from './google-calendar'
+
+function maybeSyncToGcal(task) {
+  if (!task?.due_at || task.is_subtask) return
+  getStoredTokens(task.user_id)
+    .then((tokens) => { if (tokens) syncTaskToGoogleCalendar(task, tokens) })
+    .catch(() => {})
+}
 
 export async function fetchTasks(userId, filters = {}) {
   let query = supabase
@@ -30,6 +38,7 @@ export async function createTask(data) {
     .single()
 
   if (error) throw error
+  maybeSyncToGcal(task)
   return task
 }
 
@@ -42,6 +51,7 @@ export async function updateTask(id, updates) {
     .single()
 
   if (error) throw error
+  maybeSyncToGcal(task)
   return task
 }
 

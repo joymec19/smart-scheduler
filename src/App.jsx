@@ -18,6 +18,8 @@ import { useAuth } from './hooks/useAuth'
 const Analytics = lazy(() => import('./pages/Analytics'))
 // Lazy-load Calendar (react-big-calendar is large)
 const CalendarPage = lazy(() => import('./pages/CalendarPage'))
+// Lazy-load Settings
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 
 function AnalyticsFallback() {
   return (
@@ -92,6 +94,14 @@ export default function App() {
             element={
               <Suspense fallback={<AnalyticsFallback />}>
                 <CalendarPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <Suspense fallback={<AnalyticsFallback />}>
+                <SettingsPage />
               </Suspense>
             }
           />
