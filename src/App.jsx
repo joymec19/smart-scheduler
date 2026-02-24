@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -9,7 +9,10 @@ import Notes from './pages/Notes'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import OnboardingPage from './pages/OnboardingPage'
+import PrivacyPage from './pages/PrivacyPage'
 import ErrorBoundary from './components/ErrorBoundary'
+import { useAuth } from './hooks/useAuth'
 
 // Lazy-load the heaviest page (SVG donut chart, analytics queries)
 const Analytics = lazy(() => import('./pages/Analytics'))
@@ -20,6 +23,20 @@ function AnalyticsFallback() {
       <div className="w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
     </div>
   )
+}
+
+// Requires auth only — does NOT check has_onboarded (used for the onboarding page itself)
+function AuthOnly({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0f] transition-colors">
+        <div className="w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+  if (!user) return <Navigate to="/login" replace />
+  return children
 }
 
 export default function App() {
@@ -33,9 +50,22 @@ export default function App() {
         }}
       />
       <Routes>
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
 
+        {/* Auth-required, no Layout — onboarding wizard */}
+        <Route
+          path="/onboarding"
+          element={
+            <AuthOnly>
+              <OnboardingPage />
+            </AuthOnly>
+          }
+        />
+
+        {/* Auth + onboarded — main app with nav layout */}
         <Route
           element={
             <ProtectedRoute>
