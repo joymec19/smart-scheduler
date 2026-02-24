@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
 import { trackTaskCreated } from '../../lib/analytics-tracking'
@@ -36,15 +36,20 @@ const PRIORITY_ACTIVE = {
   low:    'bg-gradient-to-r from-slate-400 to-slate-500 text-white shadow-md',
 }
 
-export default function TaskCreateModal({ open, onClose, onSubmit }) {
+export default function TaskCreateModal({ open, onClose, onSubmit, defaultDueAt = '' }) {
   const [form, setForm] = useState({
     title: '',
     description: '',
     category: 'work',
     priority: 'medium',
-    due_at: '',
+    due_at: defaultDueAt,
     estimated_minutes: null,
   })
+
+  // Sync defaultDueAt when the modal opens with a new slot selection
+  useEffect(() => {
+    if (open) setForm((prev) => ({ ...prev, due_at: defaultDueAt }))
+  }, [open, defaultDueAt])
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -76,7 +81,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit }) {
     try {
       await onSubmit(result.data)
       trackTaskCreated({ category: result.data.category, priority: result.data.priority })
-      setForm({ title: '', description: '', category: 'work', priority: 'medium', due_at: '', estimated_minutes: null })
+      setForm({ title: '', description: '', category: 'work', priority: 'medium', due_at: defaultDueAt, estimated_minutes: null })
       setErrors({})
       onClose()
     } catch {

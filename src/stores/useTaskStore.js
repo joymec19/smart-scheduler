@@ -153,6 +153,44 @@ const useTaskStore = create((set, get) => ({
     }
   },
 
+  updateTaskTime: async (taskId, newDueAt) => {
+    const prev = get().tasks.find((t) => t.id === taskId)
+    if (!prev) return
+
+    // Optimistic update
+    set((state) => ({
+      tasks: state.tasks.map((t) =>
+        t.id === taskId ? { ...t, due_at: newDueAt } : t
+      ),
+    }))
+
+    try {
+      const { data: task, error } = await supabase
+        .from('tasks')
+        .update({ due_at: newDueAt })
+        .eq('id', taskId)
+        .select()
+        .single()
+      if (error) throw error
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? task : t)),
+      }))
+      const formatted = new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(new Date(newDueAt))
+      toast.success(`Task rescheduled to ${formatted}`)
+    } catch (err) {
+      // Revert on error
+      set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === taskId ? prev : t)),
+      }))
+      toast.error('Failed to reschedule task')
+    }
+  },
+
   getParentProgress: (parentTaskId) => {
     const subtasks = get().tasks.filter(
       (t) => t.parent_task_id === parentTaskId && t.is_subtask

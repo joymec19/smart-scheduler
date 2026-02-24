@@ -45,3 +45,99 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+/* ── react-big-calendar dark mode overrides ── */
+.dark .rbc-calendar {
+  background: transparent;
+  color: white;
+}
+.dark .rbc-toolbar {
+  color: white;
+}
+.dark .rbc-header {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+}
+.dark .rbc-today {
+  background: rgba(139, 92, 246, 0.1);
+}
+.dark .rbc-off-range-bg {
+  background: rgba(255, 255, 255, 0.02);
+}
+.dark .rbc-time-slot {
+  border-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+}
+.dark .rbc-time-content {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .rbc-time-header-content {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .rbc-time-gutter .rbc-timeslot-group {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+.dark .rbc-day-slot .rbc-time-slot {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+.dark .rbc-timeslot-group {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+.dark .rbc-month-view {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dark .rbc-month-row {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.dark .rbc-day-bg + .rbc-day-bg {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.dark .rbc-date-cell {
+  color: rgba(255, 255, 255, 0.6);
+}
+.dark .rbc-date-cell.rbc-now {
+  color: #a78bfa;
+  font-weight: 700;
+}
+.dark .rbc-show-more {
+  color: #a78bfa;
+}
+.dark .rbc-day-slot .rbc-events-container {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.dark .rbc-current-time-indicator {
+  background-color: #a78bfa;
+}
+.rbc-event {
+  border-radius: 6px !important;
+  border: none !important;
+  padding: 1px 2px !important;
+}
+.rbc-event.rbc-selected {
+  outline: 2px solid rgba(167, 139, 250, 0.7) !important;
+}
+.dark .rbc-label {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+}
+.dark .rbc-allday-cell {
+  background: rgba(255, 255, 255, 0.02);
+}
+.dark .rbc-time-header.rbc-overflowing {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+/* Light mode tweaks */
+.rbc-calendar {
+  background: transparent;
+}
+.rbc-event {
+  border-radius: 6px;
+  border: none;
+}
+.rbc-time-slot {
+  font-size: 11px;
+}
+.rbc-label {
+  font-size: 11px;
+}

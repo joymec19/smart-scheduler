@@ -16,6 +16,8 @@ import { useAuth } from './hooks/useAuth'
 
 // Lazy-load the heaviest page (SVG donut chart, analytics queries)
 const Analytics = lazy(() => import('./pages/Analytics'))
+// Lazy-load Calendar (react-big-calendar is large)
+const CalendarPage = lazy(() => import('./pages/CalendarPage'))
 
 function AnalyticsFallback() {
   return (
@@ -82,6 +84,14 @@ export default function App() {
             element={
               <Suspense fallback={<AnalyticsFallback />}>
                 <Analytics />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <Suspense fallback={<AnalyticsFallback />}>
+                <CalendarPage />
               </Suspense>
             }
           />
