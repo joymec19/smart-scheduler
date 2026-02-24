@@ -75,3 +75,19 @@ export function trackTaskDecomposePatternSuggestionShown({ suggestion_type }) {
 export function trackTaskDecomposePatternSuggestionAccepted({ suggestion_type }) {
   mixpanel.track('task_decompose_pattern_suggestion_accepted', { suggestion_type })
 }
+
+// ── Nudge bundling events (Phase 5) ──────────────────────────────────────
+
+/** Called when a podcast_bundling / learning_content / work_reflection nudge
+ *  is rendered on screen for the first time. */
+export function trackNudgeBundlingShown(type, relatedTaskCategory) {
+  mixpanel.track('nudge_shown_bundling', {
+    type,
+    related_task_category: relatedTaskCategory ?? null,
+  })
+}
+
+/** Called when the user taps the primary action button on a bundling nudge. */
+export function trackNudgeBundlingClicked(type) {
+  mixpanel.track('nudge_bundling_clicked', { type })
+}

@@ -2,12 +2,12 @@ import { memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const CATEGORY_META = {
-  learning: { icon: '📚', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
-  work:     { icon: '💼', color: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500' },
-  health:   { icon: '💪', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
-  personal: { icon: '🌸', color: 'bg-pink-100 text-pink-700', dot: 'bg-pink-500' },
-  info:     { icon: '💡', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
-  creative: { icon: '🎨', color: 'bg-cyan-100 text-cyan-700', dot: 'bg-cyan-500' },
+  learning: { icon: '📚', badge: 'bg-blue-500/15 text-blue-400 border border-blue-500/25', dot: 'bg-blue-400', iconBg: 'bg-gradient-to-br from-blue-400 to-blue-500' },
+  work:     { icon: '💼', badge: 'bg-violet-500/15 text-violet-400 border border-violet-500/25', dot: 'bg-violet-400', iconBg: 'bg-gradient-to-br from-violet-400 to-violet-600' },
+  health:   { icon: '💪', badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25', dot: 'bg-emerald-400', iconBg: 'bg-gradient-to-br from-emerald-400 to-green-500' },
+  personal: { icon: '🌸', badge: 'bg-pink-500/15 text-pink-400 border border-pink-500/25', dot: 'bg-pink-400', iconBg: 'bg-gradient-to-br from-pink-400 to-pink-500' },
+  info:     { icon: '💡', badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/25', dot: 'bg-amber-400', iconBg: 'bg-gradient-to-br from-amber-400 to-orange-400' },
+  creative: { icon: '🎨', badge: 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/25', dot: 'bg-cyan-400', iconBg: 'bg-gradient-to-br from-cyan-400 to-cyan-500' },
 }
 
 function timeAgo(dateStr) {
@@ -31,20 +31,20 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ scale: 1.01 }}
-      className="bg-white rounded-xl shadow-sm p-4 active:scale-[0.98] transition-transform"
+      className="glass-card rounded-2xl p-4 active:scale-[0.98] transition-all hover:shadow-violet-500/10"
     >
       {/* Header row */}
       <div className="flex items-start gap-3">
-        {/* Category icon */}
+        {/* Category icon with gradient bg */}
         <span
-          className={`${meta.color} text-base w-8 h-8 rounded-lg flex items-center justify-center shrink-0`}
+          className={`${meta.iconBg} text-base w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm`}
         >
           {meta.icon}
         </span>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="text-gray-800 text-sm leading-snug line-clamp-3">
+          <p className="text-gray-800 dark:text-slate-100 text-sm leading-snug line-clamp-3">
             {note.content}
           </p>
 
@@ -54,7 +54,7 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
               {note.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
+                  className="text-[10px] bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full font-medium"
                 >
                   #{tag}
                 </span>
@@ -64,13 +64,10 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
 
           {/* Footer */}
           <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-              <span className={`text-[10px] font-medium ${meta.color.split(' ')[1]}`}>
-                {note.category}
-              </span>
-            </div>
-            <span className="text-[10px] text-gray-400">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${meta.badge}`}>
+              {note.category}
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">
               {timeAgo(note.created_at)}
             </span>
           </div>
@@ -79,7 +76,7 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
         {/* Delete */}
         <button
           onClick={() => onDelete(note.id)}
-          className="text-gray-300 hover:text-red-400 transition-colors ml-1 shrink-0"
+          className="text-gray-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 transition-colors ml-1 shrink-0 p-1 rounded-lg hover:bg-rose-500/10"
           aria-label="Delete note"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,11 +95,14 @@ export default function NoteList({ notes, onDelete }) {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center py-16 text-center px-8"
+        className="relative flex flex-col items-center justify-center py-16 text-center px-8 mx-4 glass-card rounded-2xl overflow-hidden"
       >
-        <span className="text-6xl mb-4">💭</span>
-        <p className="text-gray-700 font-semibold text-base">Capture your first idea</p>
-        <p className="text-gray-400 text-sm mt-1.5">Tap 📝 to jot down a thought</p>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-r from-violet-500/10 to-cyan-500/10 blur-3xl" />
+        </div>
+        <span className="text-6xl mb-4 relative">💭</span>
+        <p className="text-gray-700 dark:text-slate-200 font-semibold text-base relative">Capture your first idea</p>
+        <p className="text-slate-400 text-sm mt-1.5 relative">Tap 📝 to jot down a thought</p>
       </motion.div>
     )
   }

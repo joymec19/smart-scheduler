@@ -6,27 +6,42 @@ import { trackTaskCompleted } from '../../lib/analytics-tracking'
 import useTaskStore from '../../stores/useTaskStore'
 
 const CATEGORY_COLORS = {
-  learning: 'bg-blue-500',
-  work: 'bg-purple-500',
-  health: 'bg-green-500',
-  personal: 'bg-pink-500',
-  info: 'bg-amber-500',
-  creative: 'bg-cyan-500',
+  learning: 'bg-gradient-to-b from-blue-400 to-blue-500',
+  work:     'bg-gradient-to-b from-violet-400 to-violet-600',
+  health:   'bg-gradient-to-b from-emerald-400 to-green-500',
+  personal: 'bg-gradient-to-b from-pink-400 to-pink-500',
+  info:     'bg-gradient-to-b from-amber-400 to-orange-400',
+  creative: 'bg-gradient-to-b from-cyan-400 to-cyan-500',
+}
+
+const CATEGORY_BADGE = {
+  learning: 'bg-blue-500/15 text-blue-400 border border-blue-500/25',
+  work:     'bg-violet-500/15 text-violet-400 border border-violet-500/25',
+  health:   'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25',
+  personal: 'bg-pink-500/15 text-pink-400 border border-pink-500/25',
+  info:     'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+  creative: 'bg-cyan-500/15 text-cyan-400 border border-cyan-500/25',
 }
 
 const CATEGORY_BORDER = {
   learning: 'border-blue-500',
-  work:     'border-purple-500',
-  health:   'border-green-500',
+  work:     'border-violet-500',
+  health:   'border-emerald-500',
   personal: 'border-pink-500',
   info:     'border-amber-500',
   creative: 'border-cyan-500',
 }
 
 const PRIORITY_STYLES = {
-  high: 'bg-red-100 text-red-700',
-  medium: 'bg-amber-100 text-amber-700',
-  low: 'bg-gray-100 text-gray-600',
+  high:   'bg-rose-500/15 text-rose-400 border border-rose-500/25',
+  medium: 'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+  low:    'bg-slate-500/15 text-slate-400 border border-slate-500/25',
+}
+
+const PRIORITY_DOT = {
+  high:   'bg-rose-400',
+  medium: 'bg-amber-400',
+  low:    'bg-slate-400',
 }
 
 function isOverdue(dueAt) {
@@ -56,7 +71,7 @@ function formatEstimate(minutes) {
   return `${Math.round(minutes / 60)}h`
 }
 
-// ── SubtaskActionRow — circle checkbox + tappable time edit ────────────────────
+// ── SubtaskActionRow ──────────────────────────────────────────────────────────
 function SubtaskActionRow({ sub, onComplete }) {
   const { updateTask } = useTaskStore()
   const [editingTime, setEditingTime] = useState(false)
@@ -79,8 +94,8 @@ function SubtaskActionRow({ sub, onComplete }) {
         disabled={isCompleted}
         className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
           isCompleted
-            ? 'bg-green-500 border-green-500'
-            : 'border-gray-300 hover:border-purple-400 active:scale-90'
+            ? 'bg-gradient-to-br from-emerald-400 to-green-500 border-transparent shadow-sm shadow-emerald-500/30'
+            : 'border-gray-300 dark:border-white/20 hover:border-violet-400 active:scale-90'
         }`}
         aria-label={isCompleted ? 'Completed' : 'Mark complete'}
       >
@@ -89,7 +104,9 @@ function SubtaskActionRow({ sub, onComplete }) {
 
       {/* Title */}
       <span className={`flex-1 min-w-0 text-xs leading-snug truncate ${
-        isCompleted ? 'line-through text-gray-400' : 'text-gray-600'
+        isCompleted
+          ? 'line-through text-gray-400 dark:text-slate-600'
+          : 'text-gray-600 dark:text-slate-300'
       }`}>
         {sub.title}
         {sub.is_blocking && !isCompleted && (
@@ -115,9 +132,9 @@ function SubtaskActionRow({ sub, onComplete }) {
               if (e.key === 'Enter') handleTimeSubmit()
               if (e.key === 'Escape') setEditingTime(false)
             }}
-            className="w-10 text-xs text-center border border-purple-400 rounded px-1 py-0.5 focus:outline-none"
+            className="w-10 text-xs text-center border border-violet-400 rounded-lg px-1 py-0.5 focus:outline-none bg-white dark:bg-[#13131a] dark:text-slate-200"
           />
-          <span className="text-[10px] text-gray-400">m</span>
+          <span className="text-[10px] text-slate-400">m</span>
         </div>
       ) : (
         <button
@@ -126,8 +143,8 @@ function SubtaskActionRow({ sub, onComplete }) {
           disabled={isCompleted}
           className={`shrink-0 text-[10px] px-1.5 py-0.5 rounded-lg transition-colors ${
             isCompleted
-              ? 'text-gray-300'
-              : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+              ? 'text-gray-300 dark:text-slate-700'
+              : 'text-slate-400 hover:text-violet-500 hover:bg-violet-500/10'
           }`}
         >
           {formatEstimate(sub.estimated_minutes ?? sub.estimatedMinutes) ?? '—'}
@@ -137,7 +154,7 @@ function SubtaskActionRow({ sub, onComplete }) {
   )
 }
 
-// ── TaskCard ───────────────────────────────────────────────────────────────────
+// ── TaskCard ─────────────────────────────────────────────────────────────────
 const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false)
   const [wizardOpen, setWizardOpen]   = useState(false)
@@ -161,34 +178,35 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
 
   return (
     <>
-    {/* Indent wrapper only applied when this card is a subtask */}
+    {/* Indent wrapper for subtasks */}
     <div className={
       task.is_subtask
-        ? `pl-3 border-l-2 ml-3 ${CATEGORY_BORDER[task.category] || 'border-gray-300'}`
+        ? `pl-3 border-l-2 ml-3 ${CATEGORY_BORDER[task.category] || 'border-gray-300 dark:border-white/20'}`
         : ''
     }>
     <motion.div
       whileTap={{ scale: 0.99 }}
       className={`
-        relative rounded-xl shadow-sm hover:shadow-md transition-all
-        bg-white flex flex-col cursor-pointer
-        ${overdue ? 'ring-1 ring-amber-300' : ''}
+        relative rounded-2xl transition-all cursor-pointer
+        glass-card hover:shadow-violet-500/10
+        ${overdue ? 'ring-1 ring-amber-400/40' : ''}
+        flex flex-col
       `}
       onClick={() => onTap?.(task)}
     >
       <div className="flex items-stretch min-h-[72px]">
-        {/* Category color stripe */}
-        <div className={`w-1.5 shrink-0 rounded-l-xl ${CATEGORY_COLORS[task.category] || 'bg-gray-400'}`} />
+        {/* Category gradient stripe */}
+        <div className={`w-1 shrink-0 rounded-l-2xl ${CATEGORY_COLORS[task.category] || 'bg-gray-400'}`} />
 
         <div className="flex-1 p-3 min-w-0">
           {/* Subtask step label */}
           {task.is_subtask && (
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
                 Step {task.subtask_order} of {siblingCount}
               </span>
               {task.is_blocking && (
-                <span className="text-amber-500 text-xs" title="Complete this before next step">
+                <span className="text-amber-400 text-xs" title="Complete this before next step">
                   🔒
                 </span>
               )}
@@ -198,39 +216,38 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
           {/* Title row */}
           <div className="flex items-start justify-between gap-2">
             <h3
-              className={`font-medium text-sm leading-snug truncate ${
-                task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-900'
+              className={`font-semibold text-sm leading-snug truncate ${
+                task.status === 'completed'
+                  ? 'line-through text-gray-400 dark:text-slate-600'
+                  : 'text-gray-900 dark:text-slate-100'
               }`}
             >
               {task.title}
             </h3>
-            <span className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority] || ''}`}>
-              {task.priority}
-            </span>
+            <div className="flex items-center gap-1 shrink-0">
+              {/* Priority dot */}
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT[task.priority] || 'bg-gray-300'}`} />
+              <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${PRIORITY_STYLES[task.priority] || ''}`}>
+                {task.priority}
+              </span>
+            </div>
           </div>
 
           {/* Meta row */}
-          <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-500">
-            <span className="capitalize">{task.category}</span>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium capitalize ${CATEGORY_BADGE[task.category] || 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-slate-400'}`}>
+              {task.category}
+            </span>
             {estimateLabel && (
-              <>
-                <span className="text-gray-300">|</span>
-                <span>{estimateLabel}</span>
-              </>
+              <span className="text-xs text-slate-400">⏱ {estimateLabel}</span>
             )}
             {dueLabel && (
-              <>
-                <span className="text-gray-300">|</span>
-                <span className={overdue ? 'text-amber-600 font-medium' : ''}>
-                  {dueLabel}
-                </span>
-              </>
+              <span className={`text-xs font-medium ${overdue ? 'text-rose-400' : 'text-slate-400'}`}>
+                {overdue ? '⚠ ' : ''}{dueLabel}
+              </span>
             )}
             {task.reschedule_count > 0 && (
-              <>
-                <span className="text-gray-300">|</span>
-                <span className="text-red-400">rescheduled {task.reschedule_count}x</span>
-              </>
+              <span className="text-xs text-rose-400">↻ {task.reschedule_count}x</span>
             )}
           </div>
 
@@ -240,13 +257,15 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v) }}
-                className="flex items-center gap-1.5 text-xs text-gray-500 min-h-[28px]"
+                className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-300 min-h-[28px] transition-colors"
               >
                 <span>{expanded ? '▾' : '▸'}</span>
                 <span>{completedSubs.length}/{subtasks.length} steps done</span>
-                <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden ml-1 w-16">
+                <div className="flex-1 h-1 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden ml-1 w-16">
                   <div
-                    className={`h-full rounded-full ${CATEGORY_COLORS[task.category] || 'bg-gray-400'}`}
+                    className={`h-full rounded-full bg-gradient-to-r ${
+                      CATEGORY_COLORS[task.category]?.replace('bg-gradient-to-b', 'bg-gradient-to-r') || 'from-violet-500 to-indigo-500'
+                    }`}
                     style={{
                       width: `${subtasks.length
                         ? Math.round((completedSubs.length / subtasks.length) * 100)
@@ -277,7 +296,7 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
             <button
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => { e.stopPropagation(); setWizardOpen(true) }}
-              className="mt-2 text-xs text-purple-500 hover:text-purple-700 font-medium transition-colors min-h-[28px]"
+              className="mt-2 text-xs text-violet-500 dark:text-violet-400 hover:text-violet-600 dark:hover:text-violet-300 font-medium transition-colors min-h-[28px]"
             >
               ✂️ Break into subtasks
             </button>
@@ -288,7 +307,7 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
       {/* Action buttons — only for pending tasks */}
       {task.status === 'pending' && (
         <div
-          className="flex border-t border-gray-100 divide-x divide-gray-100"
+          className="flex border-t border-gray-100 dark:border-white/10 divide-x divide-gray-100 dark:divide-white/10"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
@@ -297,20 +316,20 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
               trackTaskCompleted({ was_overdue: isOverdue(task.due_at) })
               onComplete?.(task.id)
             }}
-            className="flex-1 py-2.5 text-xs font-semibold text-green-600 hover:bg-green-50 active:bg-green-100 transition-colors rounded-bl-xl min-h-[40px]"
+            className="flex-1 py-2.5 text-xs font-semibold text-emerald-500 hover:bg-emerald-500/10 active:bg-emerald-500/15 transition-colors rounded-bl-2xl min-h-[40px]"
           >
             ✓ Complete
           </button>
           <button
             onClick={() => setRescheduleOpen(true)}
-            className="flex-1 py-2.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 active:bg-amber-100 transition-colors rounded-br-xl min-h-[40px]"
+            className="flex-1 py-2.5 text-xs font-semibold text-amber-500 hover:bg-amber-500/10 active:bg-amber-500/15 transition-colors rounded-br-2xl min-h-[40px]"
           >
             ⟳ Reschedule
           </button>
         </div>
       )}
     </motion.div>
-    </div>{/* /indent wrapper */}
+    </div>
 
     <RescheduleModal
       open={rescheduleOpen}

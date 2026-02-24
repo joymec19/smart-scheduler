@@ -43,36 +43,40 @@ export default function Tasks() {
   }
 
   return (
-    <div className="p-4 pb-24 min-h-screen flex flex-col gap-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] transition-colors duration-300 pb-24">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-violet-600 bg-clip-text text-transparent">
-          Tasks
+      <div className="pt-14 pb-5 px-5">
+        <h1 className="text-2xl font-bold">
+          <span className="bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent">
+            Tasks
+          </span>
         </h1>
-        <p className="text-xs text-gray-400 mt-0.5">
+        <p className="text-xs text-slate-400 mt-0.5 font-medium">
           Tap Complete or Reschedule on each task
         </p>
       </div>
 
       {/* Task list */}
-      <TaskList
-        tasks={parentTasks}
-        counts={parentCounts}
-        loading={loading}
-        error={error}
-        onRetry={() => fetchTasks(user.id)}
-        onComplete={handleComplete}
-        onMiss={handleMiss}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      <div className="px-4">
+        <TaskList
+          tasks={parentTasks}
+          counts={parentCounts}
+          loading={loading}
+          error={error}
+          onRetry={() => fetchTasks(user.id)}
+          onComplete={handleComplete}
+          onMiss={handleMiss}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
 
       {/* FAB — only on Pending tab */}
       {activeTab === 'pending' && (
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setModalOpen(true)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-40"
+          className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-full shadow-xl shadow-violet-500/40 flex items-center justify-center text-2xl z-40"
           aria-label="Add task"
         >
           +

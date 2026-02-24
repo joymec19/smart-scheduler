@@ -25,49 +25,75 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm">
-        <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-purple-500 to-violet-600 bg-clip-text text-transparent mb-8">
-          Smart Scheduler
-        </h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0f] px-4 transition-colors duration-300">
+      {/* Background gradient orb */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-r from-violet-500/10 to-indigo-500/10 blur-3xl" />
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
+      <div className="w-full max-w-sm relative">
+        {/* Logo / App name */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-xl shadow-violet-500/30 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚡</span>
           </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent">
+            Smart Scheduler
+          </h1>
+          <p className="text-slate-400 text-sm mt-1.5 font-medium">Your intelligent productivity co-pilot</p>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
-          </div>
+        <div className="glass-card rounded-3xl p-6">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5">Welcome back</h2>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+                className="w-full rounded-xl border border-gray-200 dark:border-white/10 px-4 py-3 text-sm
+                  bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-slate-100
+                  placeholder-gray-400 dark:placeholder-slate-500
+                  focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl px-4 py-2 font-medium disabled:opacity-50"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wide">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-gray-200 dark:border-white/10 px-4 py-3 text-sm
+                  bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-slate-100
+                  placeholder-gray-400 dark:placeholder-slate-500
+                  focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+              />
+            </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
+            {error && (
+              <p className="text-rose-400 text-sm bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-xl px-4 py-3 font-semibold text-sm shadow-lg shadow-violet-500/30 disabled:opacity-50 transition-opacity active:scale-[0.98] mt-1"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-sm text-slate-400 mt-6">
           Don&apos;t have an account?{' '}
-          <Link to="/signup" className="text-purple-600 font-medium">Sign Up</Link>
+          <Link to="/signup" className="text-violet-500 dark:text-violet-400 font-semibold hover:text-violet-600 transition-colors">Sign Up</Link>
         </p>
       </div>
     </div>

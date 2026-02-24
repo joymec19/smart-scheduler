@@ -12,24 +12,55 @@ import { DashboardTaskSkeleton, MetricCardSkeleton } from '../components/Skeleto
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 }
 
 const CATEGORY_LABEL_COLORS = {
-  learning:  'bg-blue-100 text-blue-700',
-  work:      'bg-purple-100 text-purple-700',
-  health:    'bg-green-100 text-green-700',
-  personal:  'bg-pink-100 text-pink-700',
-  info:      'bg-cyan-100 text-cyan-700',
-  creative:  'bg-amber-100 text-amber-700',
+  learning: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+  work:     'bg-violet-500/20 text-violet-400 border border-violet-500/30',
+  health:   'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30',
+  personal: 'bg-pink-500/20 text-pink-400 border border-pink-500/30',
+  info:     'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+  creative: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
 }
 
 const PRIORITY_COLORS = {
-  high:   'bg-red-100 text-red-700',
-  medium: 'bg-amber-100 text-amber-700',
-  low:    'bg-gray-100 text-gray-600',
+  high:   'bg-rose-500/15 text-rose-400 border border-rose-500/25',
+  medium: 'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+  low:    'bg-slate-500/15 text-slate-400 border border-slate-500/25',
 }
 
 const PRIORITY_STRIPE = {
-  high:   'bg-red-400',
-  medium: 'bg-amber-400',
-  low:    'bg-gray-300',
+  high:   'bg-gradient-to-b from-rose-400 to-red-500',
+  medium: 'bg-gradient-to-b from-amber-400 to-orange-400',
+  low:    'bg-gradient-to-b from-slate-300 to-slate-400',
+}
+
+const METRIC_CONFIGS = [
+  {
+    label: "Today's Tasks",
+    gradient: 'from-violet-500 to-indigo-600',
+    shadow: 'shadow-violet-500/20',
+  },
+  {
+    label: 'Completed',
+    gradient: 'from-emerald-400 to-green-500',
+    shadow: 'shadow-emerald-500/20',
+  },
+  {
+    label: 'Missed',
+    gradient: 'from-rose-400 to-red-500',
+    shadow: 'shadow-rose-500/20',
+  },
+  {
+    label: 'Nudges',
+    gradient: 'from-amber-400 to-orange-500',
+    shadow: 'shadow-amber-500/20',
+  },
+]
+
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour < 12) return { text: 'Good morning', emoji: '☀️' }
+  if (hour >= 12 && hour < 17) return { text: 'Good afternoon', emoji: '🌤' }
+  if (hour >= 17 && hour < 21) return { text: 'Good evening', emoji: '🌙' }
+  return { text: 'Good night', emoji: '✨' }
 }
 
 function formatDate(date) {
@@ -64,13 +95,13 @@ export default function Dashboard() {
 
   const counts = getCounts()
   const activeNudges = getActiveNudges()
+  const greeting = getGreeting()
 
   const topTasks = [...tasks]
     .filter((t) => t.status === 'pending' && !t.is_subtask)
     .sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority])
     .slice(0, 3)
 
-  // Compute subtask progress for a parent task (returns null if no subtasks)
   function subtaskProgress(parentId) {
     const subtasks = tasks.filter((t) => t.parent_task_id === parentId && t.is_subtask)
     if (!subtasks.length) return null
@@ -80,31 +111,11 @@ export default function Dashboard() {
     }
   }
 
-  const metrics = [
-    {
-      label: "Today's Tasks",
-      value: counts.pending + counts.completed + counts.missed,
-      valueColor: 'text-purple-600',
-      bg: 'bg-purple-50',
-    },
-    {
-      label: 'Completed',
-      value: counts.completed,
-      valueColor: 'text-green-600',
-      bg: 'bg-green-50',
-    },
-    {
-      label: 'Missed',
-      value: counts.missed,
-      valueColor: 'text-red-500',
-      bg: 'bg-red-50',
-    },
-    {
-      label: 'Active Nudges',
-      value: activeNudges.length,
-      valueColor: 'text-amber-600',
-      bg: 'bg-amber-50',
-    },
+  const metricValues = [
+    counts.pending + counts.completed + counts.missed,
+    counts.completed,
+    counts.missed,
+    activeNudges.length,
   ]
 
   async function handleCreateTask(data) {
@@ -113,43 +124,57 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      {/* ── Gradient header ── */}
-      <div className="bg-gradient-to-r from-purple-600 to-violet-600 pt-12 pb-10 px-5">
-        <p className="text-purple-200 text-sm">{formatDate(new Date())}</p>
-        <h1 className="text-white text-2xl font-bold mt-1">
-          Hey, {userName} 👋
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] pb-8 transition-colors duration-300">
+      {/* ── Hero greeting section ── */}
+      <div className="pt-14 pb-8 px-5">
+        <p className="text-slate-500 dark:text-slate-500 text-sm font-medium">
+          {greeting.text} {greeting.emoji}
+        </p>
+        <h1 className="mt-1 font-bold leading-tight" style={{ fontSize: '28px' }}>
+          <span className="text-gray-900 dark:text-white">Hey, </span>
+          <span className="bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent">
+            {userName}
+          </span>
+          <span className="ml-1">👋</span>
         </h1>
-        <p className="text-purple-200 text-sm mt-1">Here's your daily overview</p>
+        <p className="text-slate-400 dark:text-slate-500 text-xs mt-1.5 font-medium">
+          {formatDate(new Date())}
+        </p>
       </div>
 
-      {/* ── Metric cards — 4-up grid, overlaps header ── */}
-      <div className="px-4 -mt-5">
+      {/* ── Metric cards — 4-up grid ── */}
+      <div className="px-4">
         <div className="grid grid-cols-4 gap-2">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => <MetricCardSkeleton key={i} />)
-            : metrics.map((m) => (
+            : METRIC_CONFIGS.map((m, i) => (
                 <motion.div
                   key={m.label}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 }}
-                  className={`${m.bg} rounded-xl p-3 text-center shadow-sm`}
+                  transition={{ delay: i * 0.05 }}
+                  className="relative rounded-2xl p-3 text-center overflow-hidden glass-card hover:shadow-violet-500/10 transition-all"
                 >
-                  <p className={`${m.valueColor} text-xl font-bold leading-none`}>{m.value}</p>
-                  <p className="text-gray-500 text-[10px] mt-1 leading-tight">{m.label}</p>
+                  {/* Gradient top stripe */}
+                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${m.gradient}`} />
+                  <p className={`text-2xl font-bold leading-none bg-gradient-to-r ${m.gradient} bg-clip-text text-transparent`}>
+                    {metricValues[i]}
+                  </p>
+                  <p className="text-slate-500 dark:text-slate-500 text-[9px] mt-1.5 leading-tight font-medium">
+                    {m.label}
+                  </p>
                 </motion.div>
               ))}
         </div>
       </div>
 
       {/* ── Top 3 priority tasks ── */}
-      <div className="px-4 mt-6">
+      <div className="px-4 mt-7">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-gray-800 font-semibold text-base">Top Priority Tasks</h2>
+          <h2 className="text-gray-800 dark:text-white font-semibold text-base">Top Priority</h2>
           <button
             onClick={() => navigate('/tasks')}
-            className="text-purple-600 text-sm font-medium"
+            className="text-violet-600 dark:text-violet-400 text-sm font-medium hover:text-violet-700 transition-colors"
           >
             See all →
           </button>
@@ -165,14 +190,18 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl p-6 text-center shadow-sm"
+            className="relative glass-card rounded-2xl p-6 text-center overflow-hidden"
           >
-            <span className="text-4xl block mb-2">🌅</span>
-            <p className="text-gray-700 font-semibold text-sm">Your day is wide open!</p>
-            <p className="text-gray-400 text-xs mt-0.5">Add your first task to get started</p>
+            {/* Subtle animated gradient circle */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-violet-500/10 to-indigo-500/10 blur-2xl" />
+            </div>
+            <span className="text-4xl block mb-2 relative">🌅</span>
+            <p className="text-gray-700 dark:text-slate-200 font-semibold text-sm relative">Your day is wide open!</p>
+            <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5 relative">Add your first task to get started</p>
             <button
               onClick={() => setCreateOpen(true)}
-              className="mt-4 bg-purple-600 text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-sm active:scale-95 transition-transform"
+              className="mt-4 bg-gradient-to-r from-violet-500 to-indigo-600 text-white text-sm font-semibold px-5 py-2 rounded-xl shadow-lg shadow-violet-500/30 active:scale-95 transition-transform relative"
             >
               + Add Task
             </button>
@@ -186,18 +215,18 @@ export default function Dashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
                 onClick={() => navigate('/tasks')}
-                className="bg-white rounded-xl shadow-sm flex items-stretch overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                className="glass-card rounded-2xl flex items-stretch overflow-hidden cursor-pointer active:scale-[0.98] transition-all hover:shadow-violet-500/10"
               >
                 {/* Priority stripe */}
-                <div className={`w-1.5 shrink-0 ${PRIORITY_STRIPE[task.priority] || 'bg-gray-300'}`} />
+                <div className={`w-1 shrink-0 ${PRIORITY_STRIPE[task.priority] || 'bg-gray-300'}`} />
 
                 <div className="flex-1 p-3 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-gray-800 font-medium text-sm leading-snug truncate">
+                    <p className="text-gray-800 dark:text-slate-100 font-semibold text-sm leading-snug truncate">
                       {task.title}
                     </p>
                     <span
-                      className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                      className={`shrink-0 text-[9px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${
                         PRIORITY_COLORS[task.priority] || ''
                       }`}
                     >
@@ -207,21 +236,21 @@ export default function Dashboard() {
 
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium capitalize ${
                         CATEGORY_LABEL_COLORS[task.category] || 'bg-gray-100 text-gray-600'
                       }`}
                     >
                       {task.category}
                     </span>
                     {task.estimated_minutes && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-slate-400">
                         {task.estimated_minutes < 60
                           ? `${task.estimated_minutes}m`
                           : `${Math.round(task.estimated_minutes / 60)}h`}
                       </span>
                     )}
                     {task.due_at && (
-                      <span className="text-xs text-gray-400">
+                      <span className={`text-xs ${new Date(task.due_at) < new Date() ? 'text-rose-400 font-medium' : 'text-slate-400'}`}>
                         {new Date(task.due_at) < new Date()
                           ? '⚠ overdue'
                           : `due ${new Date(task.due_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
@@ -229,21 +258,21 @@ export default function Dashboard() {
                     )}
                   </div>
 
-                  {/* Subtask progress bar — only shown when subtasks exist */}
+                  {/* Subtask progress bar */}
                   {(() => {
                     const progress = subtaskProgress(task.id)
                     if (!progress) return null
                     const pct = Math.round((progress.completed / progress.total) * 100)
                     return (
                       <div className="mt-2 flex items-center gap-2">
-                        <div className="h-1 bg-gray-100 rounded-full flex-1">
+                        <div className="h-1 bg-gray-100 dark:bg-white/10 rounded-full flex-1">
                           <div
-                            className="h-1 bg-purple-400 rounded-full transition-all"
+                            className="h-1 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="text-[10px] text-gray-400 shrink-0">
-                          {progress.completed}/{progress.total} steps
+                        <span className="text-[10px] text-slate-400 shrink-0">
+                          {progress.completed}/{progress.total}
                         </span>
                       </div>
                     )
@@ -251,7 +280,7 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex items-center pr-3">
-                  <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -264,9 +293,9 @@ export default function Dashboard() {
       {/* ── Smart Nudges — horizontal scroll ── */}
       <div className="mt-7">
         <div className="px-4 mb-3 flex items-center justify-between">
-          <h2 className="text-gray-800 font-semibold text-base">Smart Nudges</h2>
+          <h2 className="text-gray-800 dark:text-white font-semibold text-base">Smart Nudges</h2>
           {activeNudges.length > 0 && (
-            <span className="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-medium">
               {activeNudges.length} active
             </span>
           )}
@@ -276,11 +305,14 @@ export default function Dashboard() {
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-4 bg-white rounded-xl p-5 text-center shadow-sm"
+            className="mx-4 relative glass-card rounded-2xl p-5 text-center overflow-hidden"
           >
-            <span className="text-3xl block mb-1.5">✨</span>
-            <p className="text-gray-700 font-semibold text-sm">All caught up!</p>
-            <p className="text-gray-400 text-xs mt-0.5">No nudges right now — keep it up!</p>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 blur-2xl" />
+            </div>
+            <span className="text-3xl block mb-1.5 relative">✨</span>
+            <p className="text-gray-700 dark:text-slate-200 font-semibold text-sm relative">All caught up!</p>
+            <p className="text-gray-400 dark:text-slate-500 text-xs mt-0.5 relative">No nudges right now — keep it up!</p>
           </motion.div>
         ) : (
           <div className="flex gap-3 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: 'none' }}>
@@ -305,17 +337,17 @@ export default function Dashboard() {
             >
               <button
                 onClick={() => { setFabOpen(false); setCreateOpen(true) }}
-                className="flex items-center gap-2 bg-white rounded-full shadow-lg px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-100"
+                className="flex items-center gap-2 glass-float rounded-full shadow-xl px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-200"
               >
                 Add Task
-                <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">✓</span>
+                <span className="w-6 h-6 bg-gradient-to-br from-violet-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">✓</span>
               </button>
               <button
                 onClick={() => { setFabOpen(false); setNoteOpen(true) }}
-                className="flex items-center gap-2 bg-white rounded-full shadow-lg px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-100"
+                className="flex items-center gap-2 glass-float rounded-full shadow-xl px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-slate-200"
               >
                 Quick Note
-                <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs">📝</span>
+                <span className="w-6 h-6 bg-gradient-to-br from-cyan-400 to-blue-500 text-white rounded-full flex items-center justify-center text-xs shadow-sm">📝</span>
               </button>
             </motion.div>
           )}
@@ -325,7 +357,7 @@ export default function Dashboard() {
           data-tour-id="tour-fab"
           whileTap={{ scale: 0.88 }}
           onClick={() => setFabOpen((v) => !v)}
-          className="w-14 h-14 bg-gradient-to-r from-purple-500 to-violet-600 rounded-full shadow-xl flex items-center justify-center text-white"
+          className="w-14 h-14 bg-gradient-to-r from-violet-500 to-indigo-600 rounded-full shadow-xl shadow-violet-500/40 flex items-center justify-center text-white"
           aria-label="Quick actions"
         >
           <motion.span
@@ -338,14 +370,14 @@ export default function Dashboard() {
         </motion.button>
       </div>
 
-      {/* ── Task create modal (from FAB) ── */}
+      {/* ── Task create modal ── */}
       <TaskCreateModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onSubmit={handleCreateTask}
       />
 
-      {/* ── Quick capture modal (from FAB) ── */}
+      {/* ── Quick capture modal ── */}
       <QuickCaptureModal
         open={noteOpen}
         onClose={() => setNoteOpen(false)}

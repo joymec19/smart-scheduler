@@ -6,12 +6,12 @@ import { useAuth } from '../../hooks/useAuth'
 import { trackNoteCreated } from '../../lib/analytics-tracking'
 
 const CATEGORIES = [
-  { value: 'learning', label: 'Learning', icon: '📚', color: 'bg-blue-500' },
-  { value: 'work',     label: 'Work',     icon: '💼', color: 'bg-purple-500' },
-  { value: 'health',   label: 'Health',   icon: '💪', color: 'bg-green-500' },
-  { value: 'personal', label: 'Personal', icon: '🌸', color: 'bg-pink-500' },
-  { value: 'info',     label: 'Info',     icon: '💡', color: 'bg-amber-500' },
-  { value: 'creative', label: 'Creative', icon: '🎨', color: 'bg-cyan-500' },
+  { value: 'learning', label: 'Learning', icon: '📚', color: 'bg-gradient-to-br from-blue-400 to-blue-500' },
+  { value: 'work',     label: 'Work',     icon: '💼', color: 'bg-gradient-to-br from-violet-400 to-violet-600' },
+  { value: 'health',   label: 'Health',   icon: '💪', color: 'bg-gradient-to-br from-emerald-400 to-green-500' },
+  { value: 'personal', label: 'Personal', icon: '🌸', color: 'bg-gradient-to-br from-pink-400 to-pink-500' },
+  { value: 'info',     label: 'Info',     icon: '💡', color: 'bg-gradient-to-br from-amber-400 to-orange-400' },
+  { value: 'creative', label: 'Creative', icon: '🎨', color: 'bg-gradient-to-br from-cyan-400 to-cyan-500' },
 ]
 
 export default function QuickCaptureModal({ open, onClose }) {
@@ -92,14 +92,15 @@ export default function QuickCaptureModal({ open, onClose }) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="bg-white w-full max-w-lg rounded-t-2xl pb-8 max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-lg rounded-t-3xl pb-8 max-h-[90vh] overflow-y-auto
+              bg-white dark:bg-gray-900/98 border-t border-gray-200 dark:border-white/10"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -107,17 +108,17 @@ export default function QuickCaptureModal({ open, onClose }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle */}
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mt-3 mb-4" />
+            <div className="w-10 h-1 bg-gray-300 dark:bg-white/15 rounded-full mx-auto mt-3 mb-4" />
 
             <div className="px-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">Quick Note</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Quick Note</h2>
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-white/15 transition-colors"
                   aria-label="Close"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -130,12 +131,15 @@ export default function QuickCaptureModal({ open, onClose }) {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What's on your mind?..."
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-gray-800 placeholder-gray-400 leading-relaxed"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/10 text-sm
+                  bg-gray-50 dark:bg-white/5 text-gray-800 dark:text-slate-100
+                  placeholder-gray-400 dark:placeholder-slate-500
+                  focus:outline-none focus:ring-2 focus:ring-violet-500/50 resize-none leading-relaxed"
               />
 
               {/* Category chips */}
               <div className="mt-4">
-                <p className="text-xs font-medium text-gray-500 mb-2">Category</p>
+                <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Category</p>
                 <div className="grid grid-cols-3 gap-2">
                   {CATEGORIES.map((cat) => (
                     <button
@@ -143,10 +147,10 @@ export default function QuickCaptureModal({ open, onClose }) {
                       type="button"
                       onClick={() => setCategory(cat.value)}
                       className={`
-                        min-h-[40px] rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5
+                        min-h-[40px] rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5
                         ${category === cat.value
                           ? `${cat.color} text-white shadow-md scale-[1.02]`
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-white/10 border border-transparent dark:border-white/10'
                         }
                       `}
                     >
@@ -159,20 +163,20 @@ export default function QuickCaptureModal({ open, onClose }) {
 
               {/* Tag input */}
               <div className="mt-4">
-                <p className="text-xs font-medium text-gray-500 mb-2">Tags (optional)</p>
+                <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Tags (optional)</p>
 
                 {/* Tag pills + input */}
-                <div className="flex flex-wrap gap-1.5 px-3 py-2 rounded-xl border border-gray-200 min-h-[44px] focus-within:ring-2 focus-within:ring-purple-400 focus-within:border-transparent">
+                <div className="flex flex-wrap gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-white/10 min-h-[44px] focus-within:ring-2 focus-within:ring-violet-500/50 focus-within:border-transparent bg-gray-50 dark:bg-white/5">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full"
+                      className="flex items-center gap-1 text-xs bg-violet-500/15 text-violet-400 border border-violet-500/25 px-2 py-0.5 rounded-full"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
-                        className="text-purple-400 hover:text-purple-700"
+                        className="text-violet-400 hover:text-violet-300"
                       >
                         ×
                       </button>
@@ -185,7 +189,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                     onKeyDown={handleTagKeyDown}
                     onBlur={() => tagInput.trim() && addTag(tagInput)}
                     placeholder={tags.length === 0 ? 'Add tag, press Enter...' : ''}
-                    className="flex-1 min-w-[120px] text-xs outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                    className="flex-1 min-w-[120px] text-xs outline-none bg-transparent text-gray-700 dark:text-slate-300 placeholder-gray-400 dark:placeholder-slate-500"
                   />
                 </div>
 
@@ -200,7 +204,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                           key={tag}
                           type="button"
                           onClick={() => addTag(tag)}
-                          className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full hover:bg-gray-200 transition-colors"
+                          className="text-[10px] bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-slate-500 border border-gray-200 dark:border-white/10 px-2 py-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
                         >
                           #{tag}
                         </button>
@@ -217,11 +221,11 @@ export default function QuickCaptureModal({ open, onClose }) {
                     setLinkTask((v) => !v)
                     if (!linkTask) setShowTaskPicker(true)
                   }}
-                  className="flex items-center gap-2 text-sm text-gray-600 w-full"
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300 w-full"
                 >
                   <span
                     className={`w-10 h-6 rounded-full transition-colors flex items-center px-0.5 ${
-                      linkTask ? 'bg-purple-500' : 'bg-gray-200'
+                      linkTask ? 'bg-gradient-to-r from-violet-500 to-indigo-600' : 'bg-gray-200 dark:bg-white/10'
                     }`}
                   >
                     <motion.span
@@ -244,9 +248,9 @@ export default function QuickCaptureModal({ open, onClose }) {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 rounded-xl border border-gray-200 max-h-36 overflow-y-auto">
+                    <div className="mt-3 rounded-xl border border-gray-200 dark:border-white/10 max-h-36 overflow-y-auto bg-gray-50 dark:bg-white/5">
                       {pendingTasks.length === 0 ? (
-                        <p className="text-center text-xs text-gray-400 py-4">No pending tasks</p>
+                        <p className="text-center text-xs text-slate-400 py-4">No pending tasks</p>
                       ) : (
                         pendingTasks.map((task) => (
                           <button
@@ -256,19 +260,19 @@ export default function QuickCaptureModal({ open, onClose }) {
                               setSelectedTaskId(task.id)
                               setShowTaskPicker(false)
                             }}
-                            className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 ${
-                              selectedTaskId === task.id ? 'bg-purple-50' : ''
+                            className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                              selectedTaskId === task.id ? 'bg-violet-500/10' : ''
                             }`}
                           >
                             <span
                               className={`w-2 h-2 rounded-full shrink-0 ${
-                                task.priority === 'high' ? 'bg-red-400' :
-                                task.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300'
+                                task.priority === 'high' ? 'bg-rose-400' :
+                                task.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-slate-500'
                               }`}
                             />
-                            <span className="truncate text-gray-700">{task.title}</span>
+                            <span className="truncate text-gray-700 dark:text-slate-300">{task.title}</span>
                             {selectedTaskId === task.id && (
-                              <span className="ml-auto text-purple-500 shrink-0">✓</span>
+                              <span className="ml-auto text-violet-500 shrink-0">✓</span>
                             )}
                           </button>
                         ))
@@ -276,8 +280,8 @@ export default function QuickCaptureModal({ open, onClose }) {
                     </div>
 
                     {linkedTask && (
-                      <p className="text-xs text-purple-600 mt-1.5 px-1">
-                        Linked to: <span className="font-medium">{linkedTask.title}</span>
+                      <p className="text-xs text-violet-500 dark:text-violet-400 mt-1.5 px-1">
+                        Linked to: <span className="font-semibold">{linkedTask.title}</span>
                       </p>
                     )}
                   </motion.div>
@@ -289,7 +293,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                 type="button"
                 onClick={handleSave}
                 disabled={!content.trim() || submitting}
-                className="w-full mt-6 bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl px-4 py-3 font-semibold text-sm min-h-[48px] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                className="w-full mt-6 bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-xl px-4 py-3 font-semibold text-sm min-h-[48px] shadow-lg shadow-violet-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity active:scale-[0.98]"
               >
                 {submitting ? 'Saving...' : 'Save Note'}
               </button>

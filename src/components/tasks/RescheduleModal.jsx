@@ -20,7 +20,6 @@ function formatDateTime(iso) {
   })
 }
 
-// Convert ISO → "YYYY-MM-DDTHH:mm" for datetime-local input
 function toInputValue(iso) {
   if (!iso) return ''
   const d = new Date(iso)
@@ -39,7 +38,6 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
   const [submitting, setSubmitting]       = useState(false)
   const [showWizard, setShowWizard]       = useState(false)
 
-  // Reset + fetch whenever the modal opens for a new task
   useEffect(() => {
     if (!open || !task) return
     setSuggestion(null)
@@ -78,7 +76,6 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
         reschedule_count: newCount,
       })
 
-      // Log the reschedule event
       await supabase.from('task_activity_logs').insert({
         user_id: task.user_id,
         task_id: task.id,
@@ -129,7 +126,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             onClick={onClose}
           />
 
@@ -140,22 +137,23 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 px-5 pt-4 pb-10 max-h-[88vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 rounded-t-3xl z-50 px-5 pt-4 pb-10 max-h-[88vh] overflow-y-auto
+              bg-white dark:bg-gray-900/98 border-t border-gray-200 dark:border-white/10"
           >
             {/* Drag handle */}
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <div className="w-10 h-1 bg-gray-200 dark:bg-white/15 rounded-full mx-auto mb-5" />
 
             {/* Header */}
-            <h2 className="text-lg font-bold text-gray-800">Reschedule Task</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Missed this one? Let's find a better time.</p>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white">Reschedule Task</h2>
+            <p className="text-sm text-slate-400 mt-0.5">Missed this one? Let's find a better time.</p>
 
-            {/* Warning banner — reschedule_count >= 3 */}
+            {/* Warning banner */}
             {showWarning && (
-              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2 items-start">
-                <span className="text-amber-500 mt-0.5">⚠️</span>
+              <div className="mt-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3 flex gap-2 items-start">
+                <span className="text-amber-400 mt-0.5">⚠️</span>
                 <div>
-                  <p className="text-amber-700 text-sm font-semibold">Consider breaking this down</p>
-                  <p className="text-amber-600 text-xs mt-0.5">
+                  <p className="text-amber-500 dark:text-amber-400 text-sm font-semibold">Consider breaking this down</p>
+                  <p className="text-amber-600 dark:text-amber-500/80 text-xs mt-0.5">
                     This task has been rescheduled {rescheduleCount} times. Try splitting it into smaller steps.
                   </p>
                 </div>
@@ -163,44 +161,44 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
             )}
 
             {/* Task info */}
-            <div className="mt-4 bg-gray-50 rounded-xl p-4">
-              <p className="text-gray-800 font-semibold text-sm">{task.title}</p>
-              <p className="text-gray-400 text-xs mt-1">
+            <div className="mt-4 bg-gray-50 dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/10">
+              <p className="text-gray-800 dark:text-slate-100 font-semibold text-sm">{task.title}</p>
+              <p className="text-slate-400 text-xs mt-1">
                 Original due: {formatDateTime(task.due_at)}
               </p>
               {rescheduleCount > 0 && (
-                <p className="text-red-400 text-xs mt-0.5">Rescheduled {rescheduleCount}×</p>
+                <p className="text-rose-400 text-xs mt-0.5">Rescheduled {rescheduleCount}×</p>
               )}
             </div>
 
             {/* AI suggestion card */}
             {loadingSuggestion ? (
-              <div className="mt-4 flex items-center gap-2 text-gray-400 text-sm">
-                <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+              <div className="mt-4 flex items-center gap-2 text-slate-400 text-sm">
+                <div className="w-4 h-4 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
                 Analysing your patterns…
               </div>
             ) : suggestion ? (
-              <div className="mt-4 bg-purple-50 rounded-xl p-4">
+              <div className="mt-4 bg-violet-500/10 border border-violet-500/20 rounded-2xl p-4">
                 <div className="flex items-start gap-2">
-                  <span className="text-purple-500 text-base mt-0.5">✦</span>
+                  <span className="text-violet-400 text-base mt-0.5">✦</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-purple-700 text-xs font-semibold uppercase tracking-wide">Suggested time</p>
-                    <p className="text-purple-900 text-base font-bold mt-0.5">
+                    <p className="text-violet-400 text-xs font-semibold uppercase tracking-wide">Suggested time</p>
+                    <p className="text-gray-900 dark:text-white text-base font-bold mt-0.5">
                       {formatDateTime(previewDatetime)}
                     </p>
-                    <p className="text-purple-500 text-xs mt-1 leading-relaxed">
+                    <p className="text-violet-400 dark:text-violet-400/80 text-xs mt-1 leading-relaxed">
                       {suggestion.rationale_text}
                     </p>
 
                     {/* Confidence bar */}
                     <div className="mt-3 flex items-center gap-2">
-                      <div className="h-1.5 bg-purple-200 rounded-full flex-1">
+                      <div className="h-1.5 bg-violet-500/20 rounded-full flex-1">
                         <div
-                          className="h-1.5 bg-purple-500 rounded-full transition-all"
+                          className="h-1.5 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full transition-all"
                           style={{ width: `${Math.round(suggestion.confidence_score * 100)}%` }}
                         />
                       </div>
-                      <span className="text-purple-400 text-xs shrink-0">
+                      <span className="text-violet-400 text-xs shrink-0">
                         {Math.round(suggestion.confidence_score * 100)}% confidence
                       </span>
                     </div>
@@ -209,22 +207,24 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
               </div>
             ) : null}
 
-            {/* Custom date picker — shown when Adjust is pressed */}
+            {/* Custom date picker */}
             {showPicker && (
               <div className="mt-3">
-                <label className="text-xs font-medium text-gray-500">Choose a different time</label>
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Choose a different time</label>
                 <input
                   type="datetime-local"
                   value={adjustedDate}
                   onChange={(e) => setAdjustedDate(e.target.value)}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="mt-1.5 w-full border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm
+                    bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-slate-100
+                    focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 />
               </div>
             )}
 
-            {/* Orange rescheduled-times banner (above buttons) */}
+            {/* Orange rescheduled-times banner */}
             {rescheduleCount >= 3 && (
-              <div className="mt-5 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 text-orange-700 text-sm font-medium">
+              <div className="mt-5 bg-orange-500/10 border border-orange-500/20 rounded-xl px-3 py-2 text-orange-400 text-sm font-medium">
                 This task has been rescheduled {rescheduleCount} times
               </div>
             )}
@@ -234,14 +234,14 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
               <button
                 onClick={handleAccept}
                 disabled={submitting || loadingSuggestion || !suggestion}
-                className="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 active:scale-95 transition-transform"
+                className="w-full bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-semibold py-3 rounded-xl shadow-lg shadow-violet-500/25 disabled:opacity-50 active:scale-95 transition-all"
               >
                 {submitting ? 'Saving…' : 'Accept & Reschedule'}
               </button>
 
               <button
                 onClick={() => setShowPicker((v) => !v)}
-                className="w-full bg-gray-100 text-gray-700 font-medium py-3 rounded-xl active:scale-95 transition-transform"
+                className="w-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-slate-300 font-medium py-3 rounded-xl active:scale-95 transition-all"
               >
                 {showPicker ? 'Use Suggested Time' : 'Adjust Time'}
               </button>
@@ -249,7 +249,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
               <button
                 onClick={handleCancelTask}
                 disabled={submitting}
-                className="w-full bg-red-50 text-red-500 font-medium py-3 rounded-xl border border-red-100 disabled:opacity-50 active:scale-95 transition-transform"
+                className="w-full bg-rose-500/10 text-rose-400 font-medium py-3 rounded-xl border border-rose-500/20 disabled:opacity-50 active:scale-95 transition-all"
               >
                 Cancel Task (Mark Missed)
               </button>
@@ -260,12 +260,11 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
                   onClick={() => { startWizard(task); setShowWizard(true) }}
                   className="relative w-full py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 overflow-hidden active:scale-95 transition-transform"
                 >
-                  {/* Gradient border via stacked divs */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl" />
-                  <span className="absolute inset-[2px] bg-white rounded-[10px]" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-violet-500 to-cyan-500 rounded-xl" />
+                  <span className="absolute inset-[2px] bg-white dark:bg-gray-900 rounded-[10px]" />
                   <span className="relative flex items-center gap-2">
                     <span>✂️</span>
-                    <span className="bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                    <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent font-semibold">
                       Want me to break it down?
                     </span>
                   </span>
@@ -277,7 +276,6 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
       )}
     </AnimatePresence>
 
-    {/* DecomposeWizard — mounts outside the sheet so it outlives it */}
     <DecomposeWizard
       open={showWizard}
       task={task}

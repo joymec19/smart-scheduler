@@ -1,11 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    @apply bg-gray-50 dark:bg-[#0a0a0f] transition-colors duration-300;
+  }
+
+  /* Consistent scrollbar in dark mode */
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
+}
+
+@layer utilities {
+  /* Glass card utility */
+  .glass-card {
+    @apply bg-white dark:bg-[#13131a] border border-gray-100 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/30;
+  }
+
+  /* Floating glass (backdrop-blur for overlays) */
+  .glass-float {
+    @apply bg-white/80 dark:bg-[#13131a]/90 backdrop-blur-xl border border-gray-200/60 dark:border-white/10;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent;
+  }
+
+  /* Safe area for bottom nav */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
