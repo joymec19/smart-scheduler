@@ -12,13 +12,21 @@ export default function ProtectedRoute({ children }) {
       setHasOnboarded(null)
       return
     }
+    // Fast path: localStorage cache (survives until column exists in DB)
+    const localKey = `sched-onboarded-${user.id}`
+    if (localStorage.getItem(localKey) === '1') {
+      setHasOnboarded(true)
+      return
+    }
     supabase
       .from('profiles')
       .select('has_onboarded')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
-        setHasOnboarded(data?.has_onboarded ?? false)
+        const onboarded = data?.has_onboarded ?? false
+        if (onboarded) localStorage.setItem(localKey, '1')
+        setHasOnboarded(onboarded)
       })
   }, [user?.id])
 

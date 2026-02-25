@@ -148,6 +148,9 @@ export default function OnboardingPage() {
         .from('profiles')
         .upsert({ id: user.id, has_onboarded: true })
 
+      // Set localStorage so ProtectedRoute lets user through even if the
+      // DB column doesn't exist yet (migration pending) or upsert failed
+      localStorage.setItem(`sched-onboarded-${user.id}`, '1')
       window.location.replace('/')
     } catch {
       toast.error('Something went wrong. Please try again.')
