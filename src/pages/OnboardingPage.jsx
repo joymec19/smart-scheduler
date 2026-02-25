@@ -148,7 +148,7 @@ export default function OnboardingPage() {
         .from('profiles')
         .upsert({ id: user.id, has_onboarded: true })
 
-      navigate('/', { replace: true })
+      window.location.replace('/')
     } catch {
       toast.error('Something went wrong. Please try again.')
       setSaving(false)

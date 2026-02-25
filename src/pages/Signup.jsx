@@ -24,7 +24,7 @@ export default function Signup() {
     } else {
       trackUserSignup()
       if (data?.user) identifyUser(data.user.id, { signup_date: new Date().toISOString() })
-      navigate('/')
+      navigate('/onboarding')
     }
   }
 
