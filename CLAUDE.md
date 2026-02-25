@@ -285,3 +285,68 @@ Key actions: `startWizard(task)`, `loadSubtasksForGranularity(task, answer, gran
 - `task_decompose_subtask_edited` — `{ edit_type: 'rename'|'delete'|'add'|'reorder'|'time_change' }`
 - `task_decompose_pattern_suggestion_shown` — `{ suggestion_type }`
 - `task_decompose_pattern_suggestion_accepted` — `{ suggestion_type }`
+
+---
+
+## 8. NEW FEATURES (Sessions 1–7)
+
+### Packages Added
+- `react-big-calendar` — calendar view component
+- `rrule` — recurring rule parsing
+- `react-web-share` — Web Share API wrapper
+- `@dnd-kit/core` + `@dnd-kit/sortable` — drag-and-drop
+- `googleapis` — Google Calendar API client
+
+### New Supabase Tables
+```sql
+-- recurring_rules
+id               uuid PRIMARY KEY
+user_id          uuid REFERENCES profiles(id)
+task_template    jsonb
+rrule_string     text
+next_occurrence  timestamptz
+active           boolean DEFAULT true
+
+-- google_calendar_tokens
+id             uuid PRIMARY KEY
+user_id        uuid REFERENCES profiles(id)
+access_token   text
+refresh_token  text
+expiry         timestamptz
+
+-- task_shares
+id           uuid PRIMARY KEY
+user_id      uuid REFERENCES profiles(id)
+task_id      uuid REFERENCES tasks(id) NULL
+note_id      uuid REFERENCES mental_notes(id) NULL
+share_method text
+shared_at    timestamptz DEFAULT now()
+```
+
+### profiles table addition
+- `has_onboarded` boolean DEFAULT false
+
+### New Routes
+| Route | Component |
+|-------|-----------|
+| `/calendar` | CalendarPage |
+| `/onboarding` | OnboardingPage |
+
+### Onboarding
+- Shown once on first login when `profiles.has_onboarded = false`
+- Sets `has_onboarded = true` on completion/skip
+
+### Calendar (`/calendar`)
+- `react-big-calendar` with DnD (`@dnd-kit`)
+- Drag tasks to reschedule — updates `due_at` in Supabase
+- Syncs to Google Calendar via OAuth tokens stored in `google_calendar_tokens`
+
+### Recurring Tasks
+- Powered by `rrule.js`
+- 4 patterns: daily / alternate days / 3x per week / specific day of week
+- Rules stored in `recurring_rules`; `next_occurrence` updated after each spawn
+
+### Share
+- Web Share API via `react-web-share`
+- Fallbacks: Gmail, WhatsApp, native apps
+- Share events logged to `task_shares`
