@@ -53,7 +53,7 @@ export default function Layout() {
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsDark((v) => !v)}
-        className="fixed top-4 right-4 z-50 w-9 h-9 flex items-center justify-center rounded-full glass-float text-gray-500 dark:text-slate-400 shadow-md hover:shadow-lg transition-all"
+        className="fixed top-4 right-4 z-50 w-9 h-9 flex items-center justify-center rounded-full bg-white dark:bg-[#13131a] border border-gray-200/70 dark:border-white/10 text-gray-500 dark:text-slate-400 shadow-md hover:shadow-lg transition-all"
         aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       >
         {isDark ? <SunIcon /> : <MoonIcon />}
