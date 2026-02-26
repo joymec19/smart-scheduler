@@ -101,3 +101,13 @@ export function trackTaskShared({ method, category }) {
 export function trackNoteShared({ method, note_category }) {
   mixpanel.track('note_shared', { method, note_category })
 }
+
+// ── Recurring task events ─────────────────────────────────────────────────────
+
+export function trackRecurringRuleCreated({ pattern, category }) {
+  mixpanel.track('recurring_rule_created', { pattern, category })
+}
+
+export function trackRecurringTaskGenerated({ pattern }) {
+  mixpanel.track('recurring_task_generated', { pattern })
+}

@@ -267,6 +267,9 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
             {task.reschedule_count > 0 && (
               <span className="text-xs text-rose-400">↻ {task.reschedule_count}x</span>
             )}
+            {task.recurring_rule_id && (
+              <span className="text-[10px] text-violet-400" title="Recurring task">🔁</span>
+            )}
           </div>
 
           {/* Subtask accordion */}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod'
-import { trackTaskCreated } from '../../lib/analytics-tracking'
+import { trackTaskCreated, trackRecurringRuleCreated } from '../../lib/analytics-tracking'
+import RecurrenceSelector from './RecurrenceSelector'
 
 const CATEGORIES = [
   { value: 'learning', label: 'Learning', color: 'bg-gradient-to-br from-blue-400 to-blue-500' },
@@ -50,6 +51,7 @@ export default function TaskCreateModal({ open, onClose, onSubmit, defaultDueAt 
   useEffect(() => {
     if (open) setForm((prev) => ({ ...prev, due_at: defaultDueAt }))
   }, [open, defaultDueAt])
+  const [recurrence, setRecurrence] = useState(null)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -79,9 +81,14 @@ export default function TaskCreateModal({ open, onClose, onSubmit, defaultDueAt 
 
     setSubmitting(true)
     try {
-      await onSubmit(result.data)
-      trackTaskCreated({ category: result.data.category, priority: result.data.priority })
+      await onSubmit({ ...result.data, recurrence })
+      if (recurrence) {
+        trackRecurringRuleCreated({ pattern: recurrence.pattern, category: result.data.category })
+      } else {
+        trackTaskCreated({ category: result.data.category, priority: result.data.priority })
+      }
       setForm({ title: '', description: '', category: 'work', priority: 'medium', due_at: defaultDueAt, estimated_minutes: null })
+      setRecurrence(null)
       setErrors({})
       onClose()
     } catch {
@@ -223,13 +230,16 @@ export default function TaskCreateModal({ open, onClose, onSubmit, defaultDueAt 
                 </div>
               </div>
 
+              {/* Recurrence */}
+              <RecurrenceSelector value={recurrence} onChange={setRecurrence} />
+
               {/* Submit */}
               <button
                 type="submit"
                 disabled={submitting}
                 className="w-full bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-xl px-4 py-3 font-semibold text-sm min-h-[44px] shadow-lg shadow-violet-500/30 disabled:opacity-50 transition-opacity mt-2 active:scale-[0.98]"
               >
-                {submitting ? 'Creating...' : 'Create Task'}
+                {submitting ? 'Creating...' : recurrence ? 'Create Recurring Task' : 'Create Task'}
               </button>
             </form>
           </motion.div>

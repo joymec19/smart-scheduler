@@ -3,10 +3,13 @@ import * as tasksApi from '../lib/tasks'
 import { supabase } from '../lib/supabase'
 import { saveSubtasks } from '../lib/decomposition-engine'
 import { getStoredTokens, syncTaskToGoogleCalendar } from '../lib/google-calendar'
+import { createRecurringRule } from '../lib/recurring'
+import { trackRecurringTaskGenerated } from '../lib/analytics-tracking'
 import toast from 'react-hot-toast'
 
 const useTaskStore = create((set, get) => ({
   tasks: [],
+  recurringRules: [],
   loading: false,
   error: null,
 
@@ -207,6 +210,55 @@ const useTaskStore = create((set, get) => ({
         .filter((t) => t.status !== 'completed' && t.is_blocking)
         .sort((a, b) => (a.subtask_order || 0) - (b.subtask_order || 0))[0] || null
     return { total, completed, nextBlocking }
+  },
+
+  // ── Recurring rules ───────────────────────────────────────────────────────
+
+  fetchRecurringRules: async (userId) => {
+    const { data, error } = await supabase
+      .from('recurring_rules')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('active', true)
+      .order('created_at', { ascending: false })
+    if (error) return
+    set({ recurringRules: data || [] })
+  },
+
+  addRecurringRule: async (ruleData) => {
+    try {
+      await createRecurringRule(ruleData)
+      trackRecurringTaskGenerated({ pattern: ruleData.pattern_key || 'unknown' })
+      // Refresh tasks + rules to reflect the newly spawned task
+      await Promise.all([
+        get().fetchTasks(ruleData.user_id),
+        get().fetchRecurringRules(ruleData.user_id),
+      ])
+      toast.success('Recurring task created!')
+    } catch (err) {
+      toast.error('Failed to create recurring task')
+      throw err
+    }
+  },
+
+  pauseRule: async (ruleId) => {
+    const { error } = await supabase
+      .from('recurring_rules')
+      .update({ active: false, updated_at: new Date().toISOString() })
+      .eq('id', ruleId)
+    if (error) { toast.error('Failed to pause rule'); return }
+    set((state) => ({ recurringRules: state.recurringRules.filter((r) => r.id !== ruleId) }))
+    toast.success('Recurring task paused')
+  },
+
+  deleteRule: async (ruleId) => {
+    const { error } = await supabase
+      .from('recurring_rules')
+      .update({ active: false, updated_at: new Date().toISOString() })
+      .eq('id', ruleId)
+    if (error) { toast.error('Failed to delete rule'); return }
+    set((state) => ({ recurringRules: state.recurringRules.filter((r) => r.id !== ruleId) }))
+    toast.success('Recurring rule deleted')
   },
 
   // Computed helpers

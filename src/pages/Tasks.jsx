@@ -3,19 +3,35 @@ import useTaskStore from '../stores/useTaskStore'
 import { useAuth } from '../hooks/useAuth'
 import TaskList from '../components/tasks/TaskList'
 import TaskCreateModal from '../components/tasks/TaskCreateModal'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  buildRRuleString,
+  getNextOccurrence,
+  processRecurringRules,
+  getRuleDescription,
+  RECURRENCE_PATTERNS,
+} from '../lib/recurring'
 
 export default function Tasks() {
   const { user } = useAuth()
-  const { tasks, loading, error, fetchTasks, addTask, markComplete, markMissed } = useTaskStore()
+  const {
+    tasks, loading, error,
+    fetchTasks, addTask, markComplete, markMissed,
+    recurringRules, fetchRecurringRules, addRecurringRule, pauseRule, deleteRule,
+  } = useTaskStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
+  const [rulesExpanded, setRulesExpanded] = useState(false)
 
   useEffect(() => {
-    if (user?.id) {
+    if (!user?.id) return
+    const init = async () => {
+      await processRecurringRules(user.id)
       fetchTasks(user.id)
+      fetchRecurringRules(user.id)
     }
-  }, [user?.id, fetchTasks])
+    init()
+  }, [user?.id])
 
   // Exclude subtasks from the top-level list — they're grouped under their parent
   const parentTasks = tasks.filter((t) => !t.is_subtask)
@@ -25,13 +41,28 @@ export default function Tasks() {
     missed:    parentTasks.filter((t) => t.status === 'missed').length,
   }
 
-  async function handleCreate(data) {
-    await addTask({
-      ...data,
-      user_id: user.id,
-      status: 'pending',
-      due_at: data.due_at ? new Date(data.due_at).toISOString() : null,
-    })
+  async function handleCreate({ recurrence, ...data }) {
+    if (recurrence) {
+      const startDate = data.due_at ? new Date(data.due_at) : new Date()
+      const pattern = RECURRENCE_PATTERNS[recurrence.pattern]
+      const rruleString = buildRRuleString(pattern, recurrence.specificDay, startDate)
+      const nextOcc = getNextOccurrence(rruleString) ?? startDate
+      await addRecurringRule({
+        ...data,
+        user_id: user.id,
+        rrule_string: rruleString,
+        next_occurrence: nextOcc.toISOString(),
+        due_time: recurrence.dueTime,
+        pattern_key: recurrence.pattern,
+      })
+    } else {
+      await addTask({
+        ...data,
+        user_id: user.id,
+        status: 'pending',
+        due_at: data.due_at ? new Date(data.due_at).toISOString() : null,
+      })
+    }
   }
 
   async function handleComplete(id) {
@@ -82,6 +113,85 @@ export default function Tasks() {
           +
         </motion.button>
       )}
+
+      {/* Recurring Rules collapsible */}
+      <div className="px-4 mt-2 mb-6">
+        <button
+          onClick={() => setRulesExpanded((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl
+            bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10
+            shadow-sm min-h-[44px]"
+        >
+          <span className="text-sm font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-2">
+            🔁 Recurring Rules
+            {recurringRules.length > 0 && (
+              <span className="text-xs bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-300 px-2 py-0.5 rounded-full">
+                {recurringRules.length}
+              </span>
+            )}
+          </span>
+          <span className="text-gray-400 text-xs">{rulesExpanded ? '▲' : '▼'}</span>
+        </button>
+
+        <AnimatePresence>
+          {rulesExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-2 flex flex-col gap-2">
+                {recurringRules.length === 0 ? (
+                  <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-6">
+                    No recurring tasks yet. Toggle "Make this recurring?" when creating a task.
+                  </p>
+                ) : (
+                  recurringRules.map((rule) => {
+                    const nextDate = rule.next_occurrence
+                      ? new Date(rule.next_occurrence).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                      : '—'
+                    return (
+                      <div
+                        key={rule.id}
+                        className="rounded-xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                              {rule.title}
+                            </p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                              {getRuleDescription(rule.rrule_string)} · Next: {nextDate}
+                            </p>
+                          </div>
+                          <div className="flex gap-1.5 shrink-0">
+                            <button
+                              onClick={() => pauseRule(rule.id)}
+                              className="text-xs px-3 py-1.5 rounded-lg min-h-[32px]
+                                bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium"
+                            >
+                              Pause
+                            </button>
+                            <button
+                              onClick={() => deleteRule(rule.id)}
+                              className="text-xs px-3 py-1.5 rounded-lg min-h-[32px]
+                                bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-medium"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Create modal */}
       <TaskCreateModal
