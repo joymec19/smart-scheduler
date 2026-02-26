@@ -62,22 +62,26 @@ export default function RecurrenceSelector({ value, onChange }) {
 
   return (
     <div className="rounded-xl border border-gray-200 dark:border-white/10 overflow-hidden">
-      {/* Toggle header */}
+      {/* Checkbox header */}
       <button
         type="button"
         onClick={toggle}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-white/5 min-h-[44px]"
+        className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-white/5 min-h-[44px]"
       >
-        <span className="text-sm font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-2">
-          🔁 Make this recurring?
-        </span>
-        {/* Toggle pill */}
-        <span className={`relative w-10 h-5 rounded-full transition-colors ${
-          enabled ? 'bg-violet-500' : 'bg-gray-200 dark:bg-white/10'
+        {/* Checkbox tick */}
+        <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${
+          enabled
+            ? 'bg-violet-500 border-violet-500'
+            : 'border-gray-300 dark:border-white/20 bg-white dark:bg-white/5'
         }`}>
-          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-            enabled ? 'translate-x-5' : 'translate-x-0.5'
-          }`} />
+          {enabled && (
+            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2 6l3 3 5-5" />
+            </svg>
+          )}
+        </span>
+        <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+          🔁 Make this recurring?
         </span>
       </button>
 
