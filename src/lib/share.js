@@ -1,7 +1,11 @@
 import { trackTaskShared, trackNoteShared } from './analytics-tracking'
 
 export function buildWhatsAppLink(text) {
-  return 'https://wa.me/?text=' + encodeURIComponent(text)
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+  const encoded = encodeURIComponent(text)
+  return isMobile
+    ? `https://wa.me/?text=${encoded}`
+    : `https://web.whatsapp.com/send?text=${encoded}`
 }
 
 export function buildGmailLink(title, body) {

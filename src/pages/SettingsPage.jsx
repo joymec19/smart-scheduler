@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import GoogleCalendarConnect from '../components/settings/GoogleCalendarConnect'
@@ -107,6 +107,26 @@ export default function SettingsPage() {
       >
         <SectionHeader title="Data Export" description="Download your data" />
         <PlaceholderCard label="Export your tasks and notes as CSV — coming soon." />
+      </motion.section>
+
+      {/* ── Legal ────────────────────────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22 }}
+      >
+        <SectionHeader title="Legal" />
+        <div className="rounded-2xl bg-white dark:bg-[#1a1a2e] border border-gray-100 dark:border-white/10 overflow-hidden">
+          <Link
+            to="/privacy"
+            className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+          >
+            <span className="text-sm text-gray-700 dark:text-slate-300">Privacy Policy</span>
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
       </motion.section>
 
       {/* ── Danger Zone ──────────────────────────────────────── */}

@@ -9,7 +9,6 @@ import Notes from './pages/Notes'
 import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
-import OnboardingPage from './pages/OnboardingPage'
 import PrivacyPage from './pages/PrivacyPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useAuth } from './hooks/useAuth'
@@ -20,6 +19,8 @@ const Analytics = lazy(() => import('./pages/Analytics'))
 const CalendarPage = lazy(() => import('./pages/CalendarPage'))
 // Lazy-load Settings
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+// Lazy-load Onboarding (framer-motion animations, not needed on first paint)
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
 
 function AnalyticsFallback() {
   return (
@@ -64,7 +65,9 @@ export default function App() {
           path="/onboarding"
           element={
             <AuthOnly>
-              <OnboardingPage />
+              <Suspense fallback={<AnalyticsFallback />}>
+                <OnboardingPage />
+              </Suspense>
             </AuthOnly>
           }
         />

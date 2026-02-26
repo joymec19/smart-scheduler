@@ -60,15 +60,15 @@ export default function ShareFallbackModal({ open, onClose, shareContent }) {
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
           />
 
-          {/* Bottom sheet */}
+          {/* Bottom sheet — full-screen on mobile, constrained on larger screens */}
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 60, scale: 0.97 }}
             transition={{ type: 'spring', damping: 26, stiffness: 380 }}
-            className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-lg"
+            className="fixed bottom-0 left-0 right-0 z-50 sm:mx-auto sm:max-w-lg"
           >
-            <div className="bg-white dark:bg-[#13131a] rounded-t-3xl px-5 pt-4 pb-10 shadow-2xl border-t border-gray-100 dark:border-white/10">
+            <div className="bg-white dark:bg-[#13131a] rounded-t-3xl px-5 pt-4 pb-10 shadow-2xl border-t border-gray-100 dark:border-white/10 min-h-[60vh] sm:min-h-0">
               {/* Drag handle */}
               <div className="w-10 h-1 bg-gray-200 dark:bg-white/20 rounded-full mx-auto mb-5" />
 

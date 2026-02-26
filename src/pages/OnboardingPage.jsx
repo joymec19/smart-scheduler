@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
@@ -83,6 +83,24 @@ function BackButton({ onClick }) {
 export default function OnboardingPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  // Redirect if already onboarded (fast path via localStorage, then DB)
+  useEffect(() => {
+    if (!user) return
+    const localKey = `sched-onboarded-${user.id}`
+    if (localStorage.getItem(localKey) === '1') {
+      navigate('/', { replace: true })
+      return
+    }
+    supabase
+      .from('profiles')
+      .select('has_onboarded')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.has_onboarded) navigate('/', { replace: true })
+      })
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [step, setStep] = useState(1)
   const [dir, setDir] = useState(1)

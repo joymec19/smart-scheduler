@@ -28,6 +28,7 @@ export default function CalendarEventCard({ event }) {
           isCompleted ? 'line-through' : ''
         }`}
       >
+        {event.isRecurring && <span className="mr-0.5 not-italic">🔁</span>}
         {event.title}
       </span>
       {event.priority === 'high' && (

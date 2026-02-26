@@ -14,6 +14,7 @@ import {
   saveTokensFromSession,
   getStoredTokens,
   fetchGoogleCalendarEvents,
+  connectGoogleCalendar,
 } from '../lib/google-calendar'
 
 const localizer = momentLocalizer(moment)
@@ -72,13 +73,15 @@ function CalendarToolbar({ date, view, onNavigate, onView, label }) {
         {label}
       </span>
 
-      {/* View switcher */}
+      {/* View switcher — Week/Month hidden on mobile */}
       <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5 gap-0.5">
         {views.map((v) => (
           <button
             key={v}
             onClick={() => onView(v)}
             className={`px-2.5 h-7 rounded-md text-[11px] font-semibold capitalize transition-all ${
+              v !== Views.DAY ? 'hidden sm:inline-flex' : ''
+            } ${
               view === v
                 ? 'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-500/30'
                 : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
@@ -147,14 +150,15 @@ export default function CalendarPage() {
       tasks
         .filter((t) => !t.is_subtask && t.due_at)
         .map((t) => ({
-          id:       t.id,
-          title:    t.title,
-          start:    new Date(t.due_at),
-          end:      new Date(new Date(t.due_at).getTime() + (t.estimated_minutes || 30) * 60000),
-          category: t.category,
-          priority: t.priority,
-          status:   t.status,
-          resource: 'task',
+          id:          t.id,
+          title:       t.title,
+          start:       new Date(t.due_at),
+          end:         new Date(new Date(t.due_at).getTime() + (t.estimated_minutes || 30) * 60000),
+          category:    t.category,
+          priority:    t.priority,
+          status:      t.status,
+          isRecurring: !!t.recurring_rule_id,
+          resource:    'task',
         })),
     [tasks]
   )
@@ -245,11 +249,21 @@ export default function CalendarPage() {
             Drag tasks to reschedule · Tap a slot to add
           </p>
         </div>
-        {gcalTokens && (
+        {gcalTokens ? (
           <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/25 mt-0.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Google synced
+            Google Calendar synced
           </span>
+        ) : (
+          <button
+            onClick={() => connectGoogleCalendar().catch(() => toast.error('Could not start Google sign-in'))}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 text-gray-700 dark:text-slate-300 hover:border-violet-400 dark:hover:border-violet-500/50 active:scale-[0.97] transition-all mt-0.5 shadow-sm"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+            </svg>
+            Connect Google Calendar
+          </button>
         )}
       </div>
 
