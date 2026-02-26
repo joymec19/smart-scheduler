@@ -236,7 +236,14 @@ const useTaskStore = create((set, get) => ({
       ])
       toast.success('Recurring task created!')
     } catch (err) {
-      toast.error('Failed to create recurring task')
+      const detail = err?.message || err?.details || err?.hint || ''
+      // Surface whether the DB migration is missing
+      if (detail.includes('recurring_rules') || detail.includes('recurring_rule_id')) {
+        toast.error('DB migration needed — run the recurring_rules SQL in Supabase first')
+      } else {
+        toast.error(`Failed to create recurring task: ${detail || 'unknown error'}`)
+      }
+      console.error('[addRecurringRule]', err)
       throw err
     }
   },

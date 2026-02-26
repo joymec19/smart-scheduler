@@ -47,11 +47,18 @@ export default function TaskCreateModal({ open, onClose, onSubmit, defaultDueAt 
     estimated_minutes: null,
   })
 
-  // Sync defaultDueAt when the modal opens with a new slot selection
-  useEffect(() => {
-    if (open) setForm((prev) => ({ ...prev, due_at: defaultDueAt }))
-  }, [open, defaultDueAt])
   const [recurrence, setRecurrence] = useState(null)
+  // Track a key to force-remount RecurrenceSelector on each open, resetting its internal state
+  const [selectorKey, setSelectorKey] = useState(0)
+
+  // Sync defaultDueAt and reset recurrence/selector each time modal opens
+  useEffect(() => {
+    if (open) {
+      setForm((prev) => ({ ...prev, due_at: defaultDueAt }))
+      setRecurrence(null)
+      setSelectorKey((k) => k + 1)
+    }
+  }, [open, defaultDueAt])
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
 
@@ -230,8 +237,8 @@ export default function TaskCreateModal({ open, onClose, onSubmit, defaultDueAt 
                 </div>
               </div>
 
-              {/* Recurrence */}
-              <RecurrenceSelector value={recurrence} onChange={setRecurrence} />
+              {/* Recurrence — key forces remount on each modal open so internal state is fresh */}
+              <RecurrenceSelector key={selectorKey} value={recurrence} onChange={setRecurrence} />
 
               {/* Submit */}
               <button
