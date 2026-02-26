@@ -1,5 +1,7 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import ShareFallbackModal from '../share/ShareFallbackModal'
+import { shareNote } from '../../lib/share'
 
 const CATEGORY_META = {
   learning: { icon: '📚', badge: 'bg-blue-500/15 text-blue-400 border border-blue-500/25', dot: 'bg-blue-400', iconBg: 'bg-gradient-to-br from-blue-400 to-blue-500' },
@@ -23,8 +25,10 @@ function timeAgo(dateStr) {
 // Memoised so unchanged cards skip re-renders
 const NoteCard = memo(function NoteCard({ note, onDelete }) {
   const meta = CATEGORY_META[note.category] || CATEGORY_META.info
+  const [shareModal, setShareModal] = useState({ open: false, content: null })
 
   return (
+    <>
     <motion.div
       layout
       initial={{ opacity: 0, y: 12 }}
@@ -73,19 +77,41 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
           </div>
         </div>
 
-        {/* Delete */}
-        <button
-          onClick={() => onDelete(note.id)}
-          className="text-gray-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 transition-colors ml-1 shrink-0 p-1 rounded-lg hover:bg-rose-500/10"
-          aria-label="Delete note"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-0.5 ml-1 shrink-0">
+          {/* Share */}
+          <button
+            onClick={() => shareNote(note, (content) => setShareModal({ open: true, content }))}
+            className="text-gray-300 dark:text-slate-600 hover:text-violet-400 dark:hover:text-violet-400 transition-colors p-1 rounded-lg hover:bg-violet-500/10"
+            aria-label="Share note"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={() => onDelete(note.id)}
+            className="text-gray-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 transition-colors p-1 rounded-lg hover:bg-rose-500/10"
+            aria-label="Delete note"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
       </div>
     </motion.div>
+
+    <ShareFallbackModal
+      open={shareModal.open}
+      shareContent={shareModal.content}
+      onClose={() => setShareModal({ open: false, content: null })}
+    />
+    </>
   )
 })
 

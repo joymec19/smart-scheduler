@@ -91,3 +91,13 @@ export function trackNudgeBundlingShown(type, relatedTaskCategory) {
 export function trackNudgeBundlingClicked(type) {
   mixpanel.track('nudge_bundling_clicked', { type })
 }
+
+// ── Share events ──────────────────────────────────────────────────────────────
+
+export function trackTaskShared({ method, category }) {
+  mixpanel.track('task_shared', { method, category })
+}
+
+export function trackNoteShared({ method, note_category }) {
+  mixpanel.track('note_shared', { method, note_category })
+}

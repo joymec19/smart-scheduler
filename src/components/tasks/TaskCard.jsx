@@ -2,7 +2,9 @@ import { memo, useState } from 'react'
 import { motion } from 'framer-motion'
 import RescheduleModal from './RescheduleModal'
 import DecomposeWizard from '../decomposition/DecomposeWizard'
+import ShareFallbackModal from '../share/ShareFallbackModal'
 import { trackTaskCompleted } from '../../lib/analytics-tracking'
+import { shareTask } from '../../lib/share'
 import useTaskStore from '../../stores/useTaskStore'
 
 const CATEGORY_COLORS = {
@@ -157,8 +159,9 @@ function SubtaskActionRow({ sub, onComplete }) {
 // ── TaskCard ─────────────────────────────────────────────────────────────────
 const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false)
-  const [wizardOpen, setWizardOpen]   = useState(false)
-  const [expanded, setExpanded]       = useState(false)
+  const [wizardOpen, setWizardOpen]         = useState(false)
+  const [expanded, setExpanded]             = useState(false)
+  const [shareModal, setShareModal]         = useState({ open: false, content: null })
 
   const { tasks: allTasks, markComplete: markSubtaskComplete } = useTaskStore()
   const subtasks      = allTasks.filter((t) => t.parent_task_id === task.id && t.is_subtask)
@@ -225,6 +228,21 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
               {task.title}
             </h3>
             <div className="flex items-center gap-1 shrink-0">
+              {/* Share button */}
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  shareTask(task, (content) => setShareModal({ open: true, content }))
+                }}
+                className="text-gray-300 dark:text-slate-600 hover:text-violet-400 dark:hover:text-violet-400 transition-colors p-0.5 rounded-lg hover:bg-violet-500/10"
+                aria-label="Share task"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
               {/* Priority dot */}
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT[task.priority] || 'bg-gray-300'}`} />
               <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${PRIORITY_STYLES[task.priority] || ''}`}>
@@ -342,6 +360,12 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
       open={wizardOpen}
       task={task}
       onClose={() => setWizardOpen(false)}
+    />
+
+    <ShareFallbackModal
+      open={shareModal.open}
+      shareContent={shareModal.content}
+      onClose={() => setShareModal({ open: false, content: null })}
     />
     </>
   )
