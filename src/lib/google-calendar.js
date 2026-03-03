@@ -106,11 +106,15 @@ export async function saveTokensFromSession(userId) {
 // ─── Connect / Disconnect ─────────────────────────────────────────────────────
 
 export async function connectGoogleCalendar() {
+  const redirectUrl = import.meta.env.VITE_APP_URL
+    ? `${import.meta.env.VITE_APP_URL}/calendar?connected=true`
+    : `${window.location.origin}/calendar?connected=true`
+
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      scopes: 'https://www.googleapis.com/auth/calendar',
-      redirectTo: window.location.origin + '/calendar?connected=true',
+      scopes: 'openid email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
+      redirectTo: redirectUrl,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',

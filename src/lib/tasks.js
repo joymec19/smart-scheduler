@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { getStoredTokens, syncTaskToGoogleCalendar } from './google-calendar'
+import { getStoredTokens, syncTaskToGoogleCalendar, deleteGoogleCalendarEvent } from './google-calendar'
 
 function maybeSyncToGcal(task) {
   if (!task?.due_at || task.is_subtask) return
@@ -56,6 +56,24 @@ export async function updateTask(id, updates) {
 }
 
 export async function deleteTask(id) {
+  // Fetch task first to get google_event_id for calendar deletion
+  const { data: task, error: fetchError } = await supabase
+    .from('tasks')
+    .select('user_id, google_event_id')
+    .eq('id', id)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  // Delete from Google Calendar if linked (fire-and-forget)
+  if (task?.google_event_id && task?.user_id) {
+    getStoredTokens(task.user_id)
+      .then((tokens) => {
+        if (tokens) deleteGoogleCalendarEvent(task.google_event_id, tokens, task.user_id)
+      })
+      .catch(() => {})
+  }
+
   const { error } = await supabase
     .from('tasks')
     .delete()
