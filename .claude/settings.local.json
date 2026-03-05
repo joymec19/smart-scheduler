@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(GIT_EDITOR=true git rebase:*)",
+      "Bash(npm install:*)",
+      "Bash(sudo chmod:*)",
+      "Bash(git stash:*)",
+      "Bash(supabase login:*)",
+      "Bash(brew install:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7ca79a44a776af856ad227b0fb64a12cd4bd9703 supabase link:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7ca79a44a776af856ad227b0fb64a12cd4bd9703 supabase status:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7ca79a44a776af856ad227b0fb64a12cd4bd9703 supabase migration new:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7ca79a44a776af856ad227b0fb64a12cd4bd9703 supabase db push:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7ca79a44a776af856ad227b0fb64a12cd4bd9703 supabase migration repair:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7ca79a44a776af856ad227b0fb64a12cd4bd9703 supabase migration list:*)",
+      "Bash(git -C /Users/kritirupasarkar/smart-scheduler commit -am \"feat: decomposition engine with templates, urgency, and pattern learning\")",
+      "Bash(git -C /Users/kritirupasarkar/smart-scheduler push)",
+      "Bash(supabase db push:*)",
+      "Bash(supabase status:*)",
+      "Bash(supabase link:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38 supabase link:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38 supabase db push:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38 supabase migration list:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38 supabase migration repair:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38 supabase db query:*)",
+      "Bash(curl -s -X POST \"https://api.supabase.com/v1/projects/pxtglckpvhjjtzoqgjdi/database/query\" -H \"Authorization: Bearer sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38\" -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"SELECT unnest\\(enum_range\\(NULL::nudge_type\\)\\)::text AS value;\"\"}')",
+      "Bash(curl -s -X POST \"https://api.supabase.com/v1/projects/pxtglckpvhjjtzoqgjdi/database/query\" -H \"Authorization: Bearer sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38\" -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"SELECT column_name FROM information_schema.columns WHERE table_name = ''''profiles'''' AND column_name = ''''last_nudge_generation'''';\"\"}')",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_a004ca7c5284cf5414c956a390b58b07be9e9a38 supabase functions deploy:*)",
+      "Bash(curl:*)",
+      "Bash(git reset:*)",
+      "Bash(grep:*)"
+    ]
+  }
+}

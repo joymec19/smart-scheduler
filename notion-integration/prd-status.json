@@ -1,0 +1,16 @@
+{
+  "version": "2.1.0",
+  "status": "In Development - MVP live",
+  "completedFeatures": [
+    "Dashboard",
+    "Tasks",
+    "Notes",
+    "Analytics",
+    "Profile"
+  ],
+  "inProgressFeatures": [
+    "Rescheduling logic",
+    "Nudge engine"
+  ],
+  "liveUrl": "https://smart-scheduler-mu.vercel.app/"
+}

@@ -1,0 +1,31 @@
+name: Sync Notion PRD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync-prd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: notion-integration/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: notion-integration
+
+      - name: Sync PRD to Notion
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          PRD_PAGE_ID: ${{ secrets.PRD_PAGE_ID }}
+          GITHUB_SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: node scripts/sync-to-notion.js
+        working-directory: notion-integration

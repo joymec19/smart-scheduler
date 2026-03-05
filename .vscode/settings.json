@@ -1,0 +1,4 @@
+{
+    "editor.defaultFormatter": "Anthropic.claude-code",
+    "editor.defaultFoldingRangeProvider": "Anthropic.claude-code"
+}

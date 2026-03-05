@@ -35,7 +35,15 @@ export function useAuth() {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
+  const signInWithGoogle = () =>
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://smart-scheduler-mu.vercel.app/',
+      },
+    })
+
   const signOut = () => supabase.auth.signOut()
 
-  return { user, session, loading, signUp, signIn, signOut }
+  return { user, session, loading, signUp, signIn, signInWithGoogle, signOut }
 }
