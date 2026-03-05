@@ -116,6 +116,10 @@ export default function Login() {
           Don&apos;t have an account?{' '}
           <Link to="/signup" className="text-violet-500 dark:text-violet-400 font-semibold hover:text-violet-600 transition-colors">Sign Up</Link>
         </p>
+
+        <p className="text-center text-xs text-slate-500 mt-4">
+          <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
+        </p>
       </div>
     </div>
   )
