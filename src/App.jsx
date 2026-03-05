@@ -1,36 +1,115 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth'; // assuming you have this
-import DashboardPage from './pages/DashboardPage';
-import TasksPage from './pages/TasksPage';
-import NotesPage from './pages/NotesPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import CalendarPage from './pages/CalendarPage';
-import PrivacyPage from './pages/PrivacyPage';  // ← ADD
-import SettingsPage from './pages/SettingsPage';
-import OnboardingPage from './pages/OnboardingPage';
+import { lazy, Suspense } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
+import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
+import Dashboard from './pages/Dashboard'
+import Tasks from './pages/Tasks'
+import Notes from './pages/Notes'
+import Profile from './pages/Profile'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import PrivacyPage from './pages/PrivacyPage'
+import ErrorBoundary from './components/ErrorBoundary'
+import { useAuth } from './hooks/useAuth'
 
-function App() {
-  const { user, loading } = useAuth();
+// Lazy-load the heaviest page (SVG donut chart, analytics queries)
+const Analytics = lazy(() => import('./pages/Analytics'))
+// Lazy-load Calendar (react-big-calendar is large)
+const CalendarPage = lazy(() => import('./pages/CalendarPage'))
+// Lazy-load Settings
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+// Lazy-load Onboarding (framer-motion animations, not needed on first paint)
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'))
 
-  if (loading) return <div>Loading...</div>;
-
+function AnalyticsFallback() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-900 text-white">
-        <Routes>
-          <Route path="/" element={user ? <DashboardPage /> : <Navigate to="/onboarding" />} />
-          <Route path="/tasks" element={user ? <TasksPage /> : <Navigate to="/onboarding" />} />
-          <Route path="/notes" element={user ? <NotesPage /> : <Navigate to="/onboarding" />} />
-          <Route path="/analytics" element={user ? <AnalyticsPage /> : <Navigate to="/onboarding" />} />
-          <Route path="/calendar" element={user ? <CalendarPage /> : <Navigate to="/onboarding" />} />
-          <Route path="/privacy" element={<PrivacyPage />} />  // ← PUBLIC ROUTE (no auth)
-          <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/onboarding" />} />
-          <Route path="/onboarding" element={!user ? <OnboardingPage /> : <Navigate to="/" />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
-    </Router>
-  );
+    <div className="flex justify-center items-center py-24">
+      <div className="w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
 }
 
-export default App;
+// Requires auth only — does NOT check has_onboarded (used for the onboarding page itself)
+function AuthOnly({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0f] transition-colors">
+        <div className="w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+  if (!user) return <Navigate to="/login" replace />
+  return children
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 2500,
+          style: { fontSize: '14px', borderRadius: '12px' },
+        }}
+      />
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+
+        {/* Auth-required, no Layout — onboarding wizard */}
+        <Route
+          path="/onboarding"
+          element={
+            <AuthOnly>
+              <Suspense fallback={<AnalyticsFallback />}>
+                <OnboardingPage />
+              </Suspense>
+            </AuthOnly>
+          }
+        />
+
+        {/* Auth + onboarded — main app with nav layout */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/notes" element={<Notes />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/analytics"
+            element={
+              <Suspense fallback={<AnalyticsFallback />}>
+                <Analytics />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <Suspense fallback={<AnalyticsFallback />}>
+                <CalendarPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <Suspense fallback={<AnalyticsFallback />}>
+                <SettingsPage />
+              </Suspense>
+            }
+          />
+        </Route>
+      </Routes>
+    </ErrorBoundary>
+  )
+}
