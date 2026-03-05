@@ -27,5 +27,6 @@ jobs:
           PRD_PAGE_ID: ${{ secrets.PRD_PAGE_ID }}
           GITHUB_SHA: ${{ github.sha }}
           COMMIT_MSG: ${{ github.event.head_commit.message }}
+      github.event.head_commit.message }}  
         run: node scripts/sync-to-notion.js
         working-directory: notion-integration
