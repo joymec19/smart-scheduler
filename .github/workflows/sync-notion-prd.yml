@@ -26,7 +26,6 @@ jobs:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           PRD_PAGE_ID: ${{ secrets.PRD_PAGE_ID }}
           GITHUB_SHA: ${{ github.sha }}
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-      github.event.head_commit.message }}  
+          COMMIT_MSG: ${{ github.event.head_commit.message }} 
         run: node scripts/sync-to-notion.js
         working-directory: notion-integration
