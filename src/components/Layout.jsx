@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import BottomNav from './BottomNav'
 import QuickCaptureModal from './notes/QuickCaptureModal'
@@ -75,6 +75,13 @@ export default function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* ── Footer ── */}
+      <footer className="text-center py-3 pb-4 text-xs text-gray-400 dark:text-slate-500 flex justify-center gap-4">
+        <Link to="/privacy" className="hover:text-violet-500 dark:hover:text-violet-400 transition-colors">Privacy Policy</Link>
+        <span>·</span>
+        <Link to="/terms" className="hover:text-violet-500 dark:hover:text-violet-400 transition-colors">Terms of Service</Link>
+      </footer>
 
       <BottomNav />
 

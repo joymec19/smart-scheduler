@@ -10,6 +10,7 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 import ErrorBoundary from './components/ErrorBoundary'
 import { useAuth } from './hooks/useAuth'
 
@@ -59,6 +60,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
 
         {/* Auth-required, no Layout — onboarding wizard */}
         <Route

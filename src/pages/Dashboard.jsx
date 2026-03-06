@@ -132,11 +132,7 @@ export default function Dashboard() {
             Smart Scheduler
           </h1>
         </div>
-        <p className="text-slate-500 dark:text-slate-400 mb-4">AI-powered task management for professionals</p>
-        <div className="flex gap-4 text-sm">
-          <a href="/privacy" className="text-emerald-400 hover:text-emerald-300">Privacy Policy</a>
-          <a href="/terms" className="text-emerald-400 hover:text-emerald-300">Terms of Service</a>
-        </div>
+        <p className="text-slate-500 dark:text-slate-400">AI-powered task management for professionals</p>
       </div>
       {/* ── Hero greeting section ── */}
       <div className="pt-14 pb-8 px-5 relative">
