@@ -61,20 +61,6 @@ const tabs = [
     ),
   },
   {
-    to: '/calendar',
-    label: 'Calendar',
-    inactiveColor: 'text-amber-400 dark:text-amber-500/70',
-    inactiveBg: 'bg-amber-50 dark:bg-amber-500/10',
-    activeBg: 'from-amber-400 to-orange-500',
-    activeShadow: 'shadow-amber-500/40',
-    activeLabel: 'text-amber-600 dark:text-amber-400',
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
     to: '/profile',
     label: 'Profile',
     inactiveColor: 'text-cyan-400 dark:text-cyan-500/70',
