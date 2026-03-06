@@ -125,11 +125,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] pb-8 transition-colors duration-300">
-      <div className="mb-8 p-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2">
-          Smart Scheduler
-        </h1>
-        <p className="text-slate-400 mb-4">AI-powered task management for professionals</p>
+      <div className="mb-8 p-6 bg-gradient-to-br from-violet-50 to-indigo-50 dark:bg-none dark:bg-white/5 backdrop-blur-md rounded-2xl border border-violet-100 dark:border-white/10">
+        <div className="flex items-center gap-3 mb-2">
+          <img src="/logo.png" alt="Smart Scheduler logo" className="w-10 h-10 rounded-xl shadow-md shadow-violet-500/20" />
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-white dark:to-slate-200 bg-clip-text text-transparent">
+            Smart Scheduler
+          </h1>
+        </div>
+        <p className="text-slate-500 dark:text-slate-400 mb-4">AI-powered task management for professionals</p>
         <div className="flex gap-4 text-sm">
           <a href="/privacy" className="text-emerald-400 hover:text-emerald-300">Privacy Policy</a>
           <a href="/terms" className="text-emerald-400 hover:text-emerald-300">Terms of Service</a>
