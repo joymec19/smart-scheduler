@@ -272,7 +272,6 @@ export default function OnboardingPage() {
                     'Your tasks and notes are private — only you can see them',
                     'We never sell your data to third parties',
                     'You can export or delete all your data anytime from Settings',
-                    'Google Calendar sync is optional and can be disconnected anytime',
                   ].map((point) => (
                     <li key={point} className="flex items-start gap-2.5">
                       <span className="text-emerald-500 mt-0.5 flex-shrink-0 text-base">✅</span>

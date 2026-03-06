@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import * as tasksApi from '../lib/tasks'
 import { supabase } from '../lib/supabase'
 import { saveSubtasks } from '../lib/decomposition-engine'
-import { getStoredTokens, syncTaskToGoogleCalendar } from '../lib/google-calendar'
 import { createRecurringRule } from '../lib/recurring'
 import { trackRecurringTaskGenerated } from '../lib/analytics-tracking'
 import toast from 'react-hot-toast'
@@ -179,10 +178,6 @@ const useTaskStore = create((set, get) => ({
       set((state) => ({
         tasks: state.tasks.map((t) => (t.id === taskId ? task : t)),
       }))
-      // Sync to Google Calendar (fire-and-forget)
-      getStoredTokens(task.user_id)
-        .then((tokens) => { if (tokens) syncTaskToGoogleCalendar(task, tokens) })
-        .catch(() => {})
       const formatted = new Intl.DateTimeFormat(undefined, {
         month: 'short',
         day: 'numeric',

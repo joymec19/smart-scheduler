@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
-import GoogleCalendarConnect from '../components/settings/GoogleCalendarConnect'
-
 function SectionHeader({ title, description }) {
   return (
     <div className="mb-3">
@@ -74,19 +72,6 @@ export default function SettingsPage() {
             <span className="text-sm text-gray-700 dark:text-slate-300">Sign out</span>
           </button>
         </div>
-      </motion.section>
-
-      {/* ── Google Calendar ──────────────────────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <SectionHeader
-          title="Google Calendar"
-          description="Sync tasks to your Google Calendar automatically"
-        />
-        <GoogleCalendarConnect />
       </motion.section>
 
       {/* ── Notifications (placeholder) ──────────────────────── */}

@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import moment from 'moment'
@@ -10,13 +9,6 @@ import useTaskStore from '../stores/useTaskStore'
 import { useAuth } from '../hooks/useAuth'
 import TaskCreateModal from '../components/tasks/TaskCreateModal'
 import CalendarEventCard from '../components/calendar/CalendarEventCard'
-import {
-  saveTokensFromSession,
-  getStoredTokens,
-  fetchGoogleCalendarEvents,
-  connectGoogleCalendar,
-} from '../lib/google-calendar'
-
 const localizer = momentLocalizer(moment)
 const DnDCalendar = withDragAndDrop(Calendar)
 
@@ -99,50 +91,14 @@ function CalendarToolbar({ date, view, onNavigate, onView, label }) {
 export default function CalendarPage() {
   const { user } = useAuth()
   const { tasks, fetchTasks, addTask, updateTaskTime } = useTaskStore()
-  const [searchParams, setSearchParams] = useSearchParams()
-
   const [view, setView]               = useState(Views.DAY)
   const [date, setDate]               = useState(new Date())
   const [createModal, setCreateModal] = useState({ open: false, defaultDueAt: '' })
-  const [gcalTokens, setGcalTokens]   = useState(null)
-  const [externalEvents, setExternalEvents] = useState([])
 
   // Load tasks on mount
   useEffect(() => {
     if (user) fetchTasks(user.id)
   }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Handle OAuth redirect: ?connected=true
-  useEffect(() => {
-    if (!user) return
-    if (searchParams.get('connected') === 'true') {
-      saveTokensFromSession(user.id)
-        .then((t) => {
-          if (t) {
-            setGcalTokens(t)
-            toast.success('Google Calendar connected!')
-          }
-        })
-        .catch(() => toast.error('Could not save Google Calendar tokens'))
-        .finally(() => {
-          // Remove query param without full reload
-          setSearchParams({}, { replace: true })
-        })
-    } else {
-      // Check if already connected
-      getStoredTokens(user.id).then(setGcalTokens)
-    }
-  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Fetch external Google events whenever tokens or date/view changes
-  useEffect(() => {
-    if (!gcalTokens || !user) return
-    const start = moment(date).startOf(view === Views.MONTH ? 'month' : view === Views.WEEK ? 'week' : 'day').subtract(1, 'day').toDate()
-    const end   = moment(date).endOf(view === Views.MONTH ? 'month' : view === Views.WEEK ? 'week' : 'day').add(1, 'day').toDate()
-    fetchGoogleCalendarEvents(gcalTokens, user.id, { start, end })
-      .then(setExternalEvents)
-      .catch(() => setExternalEvents([]))
-  }, [gcalTokens, date, view, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Map tasks → calendar events (skip subtasks, skip tasks without due_at)
   const taskEvents = useMemo(
@@ -163,29 +119,10 @@ export default function CalendarPage() {
     [tasks]
   )
 
-  // Merge task events + read-only external Google events
-  const events = useMemo(
-    () => [...taskEvents, ...externalEvents],
-    [taskEvents, externalEvents]
-  )
+  const events = taskEvents
 
-  // Style events by category; external Google events get a gray style
+  // Style events by category
   const eventPropGetter = useCallback((event) => {
-    if (event.isExternal) {
-      return {
-        style: {
-          backgroundColor: 'rgba(148,163,184,0.35)',
-          borderLeft: '3px solid #94a3b8',
-          borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-          borderRadius: '6px',
-          color: '#94a3b8',
-          fontSize: '12px',
-          padding: '0',
-          cursor: 'default',
-          pointerEvents: 'none',
-        },
-      }
-    }
     const bg = CATEGORY_BG[event.category] || CATEGORY_BG.work
     const border = CATEGORY_BORDER[event.category] || CATEGORY_BORDER.work
     return {
@@ -249,22 +186,6 @@ export default function CalendarPage() {
             Drag tasks to reschedule · Tap a slot to add
           </p>
         </div>
-        {gcalTokens ? (
-          <span className="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/25 mt-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Google Calendar synced
-          </span>
-        ) : (
-          <button
-            onClick={() => connectGoogleCalendar().catch(() => toast.error('Could not start Google sign-in'))}
-            className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white dark:bg-white/10 border border-gray-200 dark:border-white/15 text-gray-700 dark:text-slate-300 hover:border-violet-400 dark:hover:border-violet-500/50 active:scale-[0.97] transition-all mt-0.5 shadow-sm"
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
-            </svg>
-            Connect Google Calendar
-          </button>
-        )}
       </div>
 
       {/* Calendar container */}
@@ -317,12 +238,6 @@ export default function CalendarPage() {
             <span className="capitalize">{cat}</span>
           </span>
         ))}
-        {gcalTokens && (
-          <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-slate-400" />
-            <span>Google events</span>
-          </span>
-        )}
       </div>
 
       {/* Task create modal */}
