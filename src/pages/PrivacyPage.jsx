@@ -55,7 +55,7 @@ export default function PrivacyPage() {
           <section className="pt-8 border-t border-white/20">
             <h2 className="text-3xl font-bold mb-4 text-white">5. Contact</h2>
             <p className="text-xl">
-              Questions? Email <a href="mailto:joydeepdebnath89@gmail.com" className="underline hover:text-emerald-300">joydeepdebnath89@gmail.com</a>
+              Questions? Email <a href="mailto:business@pragya.ltd" className="underline hover:text-emerald-300">business@pragya.ltd</a>
             </p>
           </section>
         </div>
