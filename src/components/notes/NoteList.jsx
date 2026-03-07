@@ -2,6 +2,7 @@ import { memo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareFallbackModal from '../share/ShareFallbackModal'
 import { shareNote } from '../../lib/share'
+import useTaskStore from '../../stores/useTaskStore'
 
 const CATEGORY_META = {
   learning: { icon: '📚', badge: 'bg-blue-500/15 text-blue-400 border border-blue-500/25', dot: 'bg-blue-400', iconBg: 'bg-gradient-to-br from-blue-400 to-blue-500' },
@@ -22,10 +23,134 @@ function timeAgo(dateStr) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
+function formatDate(dateStr) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  }).format(new Date(dateStr))
+}
+
+const STATUS_STYLES = {
+  pending:   'bg-amber-500/15 text-amber-500 border border-amber-500/30',
+  completed: 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30',
+  missed:    'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+}
+
+function NoteDetailModal({ note, onClose }) {
+  const { tasks } = useTaskStore()
+  const meta = CATEGORY_META[note.category] || CATEGORY_META.info
+
+  // Look up linked task — may be completed, missed, or deleted
+  const linkedTask = note.source_task_id
+    ? tasks.find((t) => t.id === note.source_task_id) || null
+    : null
+  const taskDeleted = note.source_task_id && !linkedTask
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+      >
+        <motion.div
+          className="w-full max-w-lg rounded-t-3xl pb-8 max-h-[85vh] flex flex-col
+            bg-white dark:bg-gray-900/98 border-t border-gray-200 dark:border-white/10"
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Handle */}
+          <div className="w-10 h-1 bg-gray-300 dark:bg-white/15 rounded-full mx-auto mt-3 mb-4 shrink-0" />
+
+          <div className="px-5 overflow-y-auto flex-1">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className={`${meta.iconBg} text-base w-8 h-8 rounded-xl flex items-center justify-center shadow-sm`}>
+                  {meta.icon}
+                </span>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${meta.badge}`}>
+                  {note.category}
+                </span>
+              </div>
+              <button
+                onClick={onClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 hover:bg-gray-200 dark:hover:bg-white/15 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Full content */}
+            <p className="text-gray-800 dark:text-slate-100 text-sm leading-relaxed whitespace-pre-wrap mb-4">
+              {note.content}
+            </p>
+
+            {/* Tags */}
+            {note.tags && note.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {note.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-[10px] bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded-full font-medium"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Linked task */}
+            {(linkedTask || taskDeleted) && (
+              <div className="rounded-xl border border-gray-200 dark:border-white/10 p-3 mb-4 bg-gray-50 dark:bg-white/5">
+                <p className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+                  Linked Task
+                </p>
+                {taskDeleted ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-slate-600 shrink-0" />
+                    <span className="text-sm text-gray-400 dark:text-slate-500 italic">Task has been deleted</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${
+                      linkedTask.status === 'completed' ? 'bg-emerald-400' :
+                      linkedTask.status === 'missed' ? 'bg-rose-400' : 'bg-amber-400'
+                    }`} />
+                    <span className="text-sm text-gray-700 dark:text-slate-300 flex-1 truncate font-medium">
+                      {linkedTask.title}
+                    </span>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize shrink-0 ${STATUS_STYLES[linkedTask.status] || ''}`}>
+                      {linkedTask.status}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Created at */}
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 text-right">
+              {formatDate(note.created_at)}
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
 // Memoised so unchanged cards skip re-renders
 const NoteCard = memo(function NoteCard({ note, onDelete }) {
   const meta = CATEGORY_META[note.category] || CATEGORY_META.info
   const [shareModal, setShareModal] = useState({ open: false, content: null })
+  const [detailOpen, setDetailOpen] = useState(false)
 
   return (
     <>
@@ -35,7 +160,8 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ scale: 1.01 }}
-      className="glass-card rounded-2xl p-4 active:scale-[0.98] transition-all hover:shadow-violet-500/10"
+      onClick={() => setDetailOpen(true)}
+      className="glass-card rounded-2xl p-4 active:scale-[0.98] transition-all hover:shadow-violet-500/10 cursor-pointer"
     >
       {/* Header row */}
       <div className="flex items-start gap-3">
@@ -81,7 +207,7 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
         <div className="flex items-center gap-0.5 ml-1 shrink-0">
           {/* Share */}
           <button
-            onClick={() => shareNote(note, (content) => setShareModal({ open: true, content }))}
+            onClick={(e) => { e.stopPropagation(); shareNote(note, (content) => setShareModal({ open: true, content })) }}
             className="text-gray-300 dark:text-slate-600 hover:text-violet-400 dark:hover:text-violet-400 transition-colors p-1 rounded-lg hover:bg-violet-500/10"
             aria-label="Share note"
           >
@@ -93,7 +219,7 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
 
           {/* Delete */}
           <button
-            onClick={() => onDelete(note.id)}
+            onClick={(e) => { e.stopPropagation(); onDelete(note.id) }}
             className="text-gray-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 transition-colors p-1 rounded-lg hover:bg-rose-500/10"
             aria-label="Delete note"
           >
@@ -111,6 +237,7 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
       shareContent={shareModal.content}
       onClose={() => setShareModal({ open: false, content: null })}
     />
+    {detailOpen && <NoteDetailModal note={note} onClose={() => setDetailOpen(false)} />}
     </>
   )
 })
