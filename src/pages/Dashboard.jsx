@@ -257,7 +257,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-medium capitalize ${
-                        CATEGORY_LABEL_COLORS[task.category] || 'bg-gray-100 text-gray-600'
+                        CATEGORY_LABEL_COLORS[task.category] || 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-slate-400'
                       }`}
                     >
                       {task.category}

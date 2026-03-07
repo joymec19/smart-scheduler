@@ -53,7 +53,7 @@ function DonutChart({ data }) {
     <div className="flex flex-col items-center gap-2">
       <svg width={cx * 2} height={cy * 2} viewBox={`0 0 ${cx * 2} ${cy * 2}`}>
         {/* Track ring */}
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={sw} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="currentColor" strokeWidth={sw} className="text-gray-200 dark:text-white/8" />
         {/* Coloured segments, rotated so first segment starts at 12 o'clock */}
         <g style={{ transform: `rotate(-90deg)`, transformOrigin: `${cx}px ${cy}px` }}>
           {segments.map(({ cat, dash, offset, color }) => (
@@ -258,7 +258,7 @@ export default function Analytics() {
                           style={{ background: CAT_COLORS[cat] || '#94a3b8' }}
                         />
                         <span className="text-[10px] text-slate-400 capitalize flex-1">{cat}</span>
-                        <span className="text-[10px] font-semibold text-slate-300 dark:text-slate-300">{count}</span>
+                        <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">{count}</span>
                       </div>
                     ))}
                 </div>

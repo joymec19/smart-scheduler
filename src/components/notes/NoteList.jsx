@@ -49,27 +49,24 @@ function NoteDetailModal({ note, onClose }) {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
         <motion.div
-          className="w-full max-w-lg rounded-t-3xl pb-8 max-h-[85vh] flex flex-col
-            bg-white dark:bg-gray-900/98 border-t border-gray-200 dark:border-white/10"
-          initial={{ y: '100%' }}
-          animate={{ y: 0 }}
-          exit={{ y: '100%' }}
+          className="w-full max-w-lg rounded-2xl pb-6 max-h-[85vh] flex flex-col
+            bg-white dark:bg-[#13131a] border border-gray-200 dark:border-white/10 shadow-2xl"
+          initial={{ opacity: 0, scale: 0.95, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 8 }}
           transition={{ type: 'spring', damping: 28, stiffness: 320 }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Handle */}
-          <div className="w-10 h-1 bg-gray-300 dark:bg-white/15 rounded-full mx-auto mt-3 mb-4 shrink-0" />
-
-          <div className="px-5 overflow-y-auto flex-1">
+          <div className="px-5 pt-5 overflow-y-auto flex-1">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 shrink-0">
               <div className="flex items-center gap-2">
                 <span className={`${meta.iconBg} text-base w-8 h-8 rounded-xl flex items-center justify-center shadow-sm`}>
                   {meta.icon}
@@ -110,7 +107,7 @@ function NoteDetailModal({ note, onClose }) {
             {/* Linked task */}
             {(linkedTask || taskDeleted) && (
               <div className="rounded-xl border border-gray-200 dark:border-white/10 p-3 mb-4 bg-gray-50 dark:bg-white/5">
-                <p className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-2">
+                <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                   Linked Task
                 </p>
                 {taskDeleted ? (
@@ -136,7 +133,7 @@ function NoteDetailModal({ note, onClose }) {
             )}
 
             {/* Created at */}
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 text-right">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 text-right">
               {formatDate(note.created_at)}
             </p>
           </div>
