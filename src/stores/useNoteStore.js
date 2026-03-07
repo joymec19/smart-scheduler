@@ -25,7 +25,7 @@ const useNoteStore = create((set, get) => ({
       toast.success('Note saved!')
       return note
     } catch (err) {
-      toast.error('Failed to save note')
+      toast.error(err?.message || 'Failed to save note')
       throw err
     }
   },

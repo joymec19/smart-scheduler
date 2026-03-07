@@ -26,7 +26,21 @@ export async function createNote(data) {
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    // 42703 = undefined_column — source_task_id column not yet migrated in this DB.
+    // Retry without it so note creation never fails because of the missing column.
+    if (error.code === '42703' && data.source_task_id !== undefined) {
+      const { source_task_id: _stripped, ...rest } = data
+      const { data: note2, error: error2 } = await supabase
+        .from('mental_notes')
+        .insert(rest)
+        .select()
+        .single()
+      if (error2) throw error2
+      return note2
+    }
+    throw error
+  }
   return note
 }
 
