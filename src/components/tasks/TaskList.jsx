@@ -4,6 +4,18 @@ import { TaskSkeletonList } from '../Skeleton'
 
 const TABS = ['pending', 'completed', 'missed']
 
+const TAB_ACTIVE = {
+  pending:   'bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-md shadow-violet-500/30 border-transparent',
+  completed: 'bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-md shadow-emerald-500/30 border-transparent',
+  missed:    'bg-gradient-to-r from-rose-400 to-red-500 text-white shadow-md shadow-rose-500/30 border-transparent',
+}
+
+const TAB_COUNT_ACTIVE = {
+  pending:   'text-white/80',
+  completed: 'text-white/80',
+  missed:    'text-white/80',
+}
+
 const SEVEN_DAYS_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
 const EMPTY_STATES = {
@@ -55,16 +67,16 @@ export default function TaskList({ tasks, counts, loading, error, onRetry, onCom
             key={tab}
             onClick={() => onTabChange(tab)}
             className={`
-              flex-1 py-2 text-sm font-medium rounded-xl capitalize
-              min-h-[44px] transition-all duration-200
+              flex-1 py-2 text-sm font-semibold rounded-xl capitalize
+              min-h-[44px] transition-all duration-200 border
               ${activeTab === tab
-                ? 'bg-white dark:bg-[#13131a] text-gray-900 dark:text-white shadow-sm border border-gray-100 dark:border-white/10'
-                : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-400'
+                ? TAB_ACTIVE[tab]
+                : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-400 border-transparent'
               }
             `}
           >
             {tab}
-            <span className={`ml-1 text-xs ${activeTab === tab ? 'text-violet-500 dark:text-violet-400' : 'text-gray-400 dark:text-slate-600'}`}>
+            <span className={`ml-1 text-xs ${activeTab === tab ? TAB_COUNT_ACTIVE[tab] : 'text-gray-400 dark:text-slate-600'}`}>
               {tabCounts[tab] ?? 0}
             </span>
           </button>
