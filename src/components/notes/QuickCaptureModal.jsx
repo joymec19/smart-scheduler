@@ -25,7 +25,6 @@ export default function QuickCaptureModal({ open, onClose }) {
   const [tags, setTags] = useState([])
   const [linkTask, setLinkTask] = useState(false)
   const [selectedTaskId, setSelectedTaskId] = useState(null)
-  const [showTaskPicker, setShowTaskPicker] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const textRef = useRef(null)
@@ -43,7 +42,6 @@ export default function QuickCaptureModal({ open, onClose }) {
       setTags([])
       setLinkTask(false)
       setSelectedTaskId(null)
-      setShowTaskPicker(false)
     }
   }, [open])
 
@@ -65,7 +63,7 @@ export default function QuickCaptureModal({ open, onClose }) {
     }
   }
 
-  const pendingTasks = tasks.filter((t) => t.status === 'pending')
+  const pendingTasks = tasks.filter((t) => t.status === 'pending' && !t.is_subtask)
   const linkedTask = pendingTasks.find((t) => t.id === selectedTaskId)
 
   async function handleSave() {
@@ -219,7 +217,6 @@ export default function QuickCaptureModal({ open, onClose }) {
                   type="button"
                   onClick={() => {
                     setLinkTask((v) => !v)
-                    if (!linkTask) setShowTaskPicker(true)
                   }}
                   className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300 w-full"
                 >
@@ -258,7 +255,6 @@ export default function QuickCaptureModal({ open, onClose }) {
                             type="button"
                             onClick={() => {
                               setSelectedTaskId(task.id)
-                              setShowTaskPicker(false)
                             }}
                             className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
                               selectedTaskId === task.id ? 'bg-violet-500/10' : ''
