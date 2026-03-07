@@ -3,6 +3,7 @@ import useTaskStore from '../stores/useTaskStore'
 import { useAuth } from '../hooks/useAuth'
 import TaskList from '../components/tasks/TaskList'
 import TaskCreateModal from '../components/tasks/TaskCreateModal'
+import TaskDetailModal from '../components/tasks/TaskDetailModal'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   buildRRuleString,
@@ -16,12 +17,13 @@ export default function Tasks() {
   const { user } = useAuth()
   const {
     tasks, loading, error,
-    fetchTasks, addTask, markComplete, markMissed,
+    fetchTasks, addTask, markComplete, markMissed, deleteTask,
     recurringRules, fetchRecurringRules, addRecurringRule, pauseRule, deleteRule,
   } = useTaskStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('pending')
   const [rulesExpanded, setRulesExpanded] = useState(false)
+  const [detailTask, setDetailTask] = useState(null)
 
   useEffect(() => {
     if (!user?.id) return
@@ -73,6 +75,16 @@ export default function Tasks() {
     await markMissed(id)
   }
 
+  async function handleDelete(id) {
+    await deleteTask(id)
+  }
+
+  function handleTapTask(task) {
+    if (task.status === 'completed' || task.status === 'missed') {
+      setDetailTask(task)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0f] transition-colors duration-300 pb-24">
       {/* Header */}
@@ -97,6 +109,8 @@ export default function Tasks() {
           onRetry={() => fetchTasks(user.id)}
           onComplete={handleComplete}
           onMiss={handleMiss}
+          onDelete={handleDelete}
+          onTapTask={handleTapTask}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
@@ -198,6 +212,13 @@ export default function Tasks() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleCreate}
+      />
+
+      {/* Task detail modal (completed / missed) */}
+      <TaskDetailModal
+        open={!!detailTask}
+        task={detailTask}
+        onClose={() => setDetailTask(null)}
       />
     </div>
   )

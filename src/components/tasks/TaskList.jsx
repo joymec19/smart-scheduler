@@ -24,7 +24,7 @@ const EMPTY_STATES = {
   },
 }
 
-export default function TaskList({ tasks, counts, loading, error, onRetry, onComplete, onMiss, onTapTask, activeTab, onTabChange }) {
+export default function TaskList({ tasks, counts, loading, error, onRetry, onComplete, onMiss, onTapTask, onDelete, activeTab, onTabChange }) {
 
   const parentTasks = tasks.filter((t) => !t.is_subtask)
 
@@ -123,6 +123,7 @@ export default function TaskList({ tasks, counts, loading, error, onRetry, onCom
                 onComplete={onComplete}
                 onMiss={onMiss}
                 onTap={onTapTask}
+                onDelete={onDelete}
               />
             </motion.div>
           ))}

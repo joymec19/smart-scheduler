@@ -157,11 +157,12 @@ function SubtaskActionRow({ sub, onComplete }) {
 }
 
 // ── TaskCard ─────────────────────────────────────────────────────────────────
-const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
+const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap, onDelete }) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false)
   const [wizardOpen, setWizardOpen]         = useState(false)
   const [expanded, setExpanded]             = useState(false)
   const [shareModal, setShareModal]         = useState({ open: false, content: null })
+  const [confirmDelete, setConfirmDelete]   = useState(false)
 
   const { tasks: allTasks, markComplete: markSubtaskComplete } = useTaskStore()
   const subtasks      = allTasks.filter((t) => t.parent_task_id === task.id && t.is_subtask)
@@ -241,6 +242,22 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              </button>
+              {/* Delete button */}
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); setConfirmDelete((v) => !v) }}
+                className={`transition-colors p-0.5 rounded-lg min-h-[28px] min-w-[28px] flex items-center justify-center ${
+                  confirmDelete
+                    ? 'text-rose-400 bg-rose-500/10'
+                    : 'text-gray-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 hover:bg-rose-500/10'
+                }`}
+                aria-label="Delete task"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
                 </svg>
               </button>
               {/* Priority dot */}
@@ -343,9 +360,31 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap }) {
           </button>
           <button
             onClick={() => setRescheduleOpen(true)}
-            className="flex-1 py-2.5 text-xs font-semibold text-amber-500 hover:bg-amber-500/10 active:bg-amber-500/15 transition-colors rounded-br-2xl min-h-[40px]"
+            className={`flex-1 py-2.5 text-xs font-semibold text-amber-500 hover:bg-amber-500/10 active:bg-amber-500/15 transition-colors min-h-[40px] ${confirmDelete ? '' : 'rounded-br-2xl'}`}
           >
             ⟳ Reschedule
+          </button>
+        </div>
+      )}
+
+      {/* Delete confirm row */}
+      {confirmDelete && (
+        <div
+          className="flex border-t border-rose-100 dark:border-rose-500/20 divide-x divide-rose-100 dark:divide-rose-500/20"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => setConfirmDelete(false)}
+            className="flex-1 py-2.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-bl-2xl min-h-[40px]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => { onDelete?.(task.id); setConfirmDelete(false) }}
+            className="flex-1 py-2.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 active:bg-rose-500/15 transition-colors rounded-br-2xl min-h-[40px]"
+          >
+            Delete
           </button>
         </div>
       )}
