@@ -108,7 +108,7 @@ export default function QuickCaptureModal({ open, onClose }) {
         >
           <motion.div
             className="w-full max-w-lg rounded-t-3xl pb-8 max-h-[90vh] overflow-y-auto
-              bg-white dark:bg-gray-900/98 border-t border-gray-200 dark:border-white/10"
+              bg-white dark:bg-[#13131a] border-t border-gray-200 dark:border-white/10"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -123,7 +123,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">Quick Note</h2>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-gray-400 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-white/15 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   aria-label="Close"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                 placeholder="What's on your mind?..."
                 rows={4}
                 className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-white/10 text-sm
-                  bg-gray-50 dark:bg-white/5 text-gray-800 dark:text-slate-100
+                  bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-slate-100
                   placeholder-gray-400 dark:placeholder-slate-500
                   focus:outline-none focus:ring-2 focus:ring-violet-500/50 resize-none leading-relaxed"
               />
@@ -158,7 +158,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                         min-h-[40px] rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5
                         ${category === cat.value
                           ? `${cat.color} text-white shadow-md scale-[1.02]`
-                          : 'bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-white/10 border border-transparent dark:border-white/10'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-gray-700 border border-transparent dark:border-white/10'
                         }
                       `}
                     >
@@ -174,7 +174,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                 <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Tags (optional)</p>
 
                 {/* Tag pills + input */}
-                <div className="flex flex-wrap gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-white/10 min-h-[44px] focus-within:ring-2 focus-within:ring-violet-500/50 focus-within:border-transparent bg-gray-50 dark:bg-white/5">
+                <div className="flex flex-wrap gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-white/10 min-h-[44px] focus-within:ring-2 focus-within:ring-violet-500/50 focus-within:border-transparent bg-gray-50 dark:bg-gray-800">
                   {tags.map((tag) => (
                     <span
                       key={tag}
@@ -232,7 +232,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                 >
                   <span
                     className={`w-10 h-6 rounded-full transition-colors flex items-center px-0.5 ${
-                      linkTask ? 'bg-gradient-to-r from-violet-500 to-indigo-600' : 'bg-gray-200 dark:bg-white/10'
+                      linkTask ? 'bg-gradient-to-r from-violet-500 to-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
                     }`}
                   >
                     <motion.span
@@ -255,7 +255,7 @@ export default function QuickCaptureModal({ open, onClose }) {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 rounded-xl border border-gray-200 dark:border-white/10 max-h-48 overflow-y-auto bg-gray-50 dark:bg-white/5">
+                    <div className="mt-3 rounded-xl border border-gray-200 dark:border-white/10 max-h-48 overflow-y-auto bg-gray-50 dark:bg-gray-800">
                       {parentTasks.length === 0 ? (
                         <p className="text-center text-xs text-slate-400 py-4">No tasks found</p>
                       ) : (
