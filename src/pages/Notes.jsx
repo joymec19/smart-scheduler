@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import useNoteStore from '../stores/useNoteStore'
+import useTaskStore from '../stores/useTaskStore'
 import NoteList from '../components/notes/NoteList'
 import { NoteSkeletonList } from '../components/Skeleton'
 
@@ -30,10 +31,14 @@ const CATEGORY_ACTIVE = {
 export default function Notes() {
   const { user } = useAuth()
   const { notes, loading, error, fetchNotes, deleteNote } = useNoteStore()
+  const { fetchTasks } = useTaskStore()
   const [activeCategory, setActiveCategory] = useState('all')
 
   useEffect(() => {
-    if (user) fetchNotes(user.id)
+    if (user) {
+      fetchNotes(user.id)
+      fetchTasks(user.id)
+    }
   }, [user])
 
   const filtered =

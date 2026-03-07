@@ -88,7 +88,7 @@ function SubtaskRow({ sub, idx, total, category, onUpdate, onDelete, onMove }) {
   const stripe = CATEGORY_BG[category] || 'bg-gray-400'
 
   return (
-    <div className="flex items-center gap-2 bg-white border border-gray-100 rounded-xl p-2.5">
+    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-white/10 rounded-xl p-2.5">
       {/* Category stripe */}
       <div className={`w-1 self-stretch rounded-full shrink-0 ${stripe}`} />
 
@@ -97,13 +97,13 @@ function SubtaskRow({ sub, idx, total, category, onUpdate, onDelete, onMove }) {
         <button
           onClick={() => onMove(idx, -1)}
           disabled={idx === 0}
-          className="text-gray-300 hover:text-gray-500 disabled:opacity-20 text-[10px] leading-none min-h-[22px] px-1"
+          className="text-gray-300 dark:text-slate-600 hover:text-gray-500 dark:hover:text-slate-400 disabled:opacity-20 text-[10px] leading-none min-h-[22px] px-1"
           aria-label="Move up"
         >▲</button>
         <button
           onClick={() => onMove(idx, 1)}
           disabled={idx === total - 1}
-          className="text-gray-300 hover:text-gray-500 disabled:opacity-20 text-[10px] leading-none min-h-[22px] px-1"
+          className="text-gray-300 dark:text-slate-600 hover:text-gray-500 dark:hover:text-slate-400 disabled:opacity-20 text-[10px] leading-none min-h-[22px] px-1"
           aria-label="Move down"
         >▼</button>
       </div>
@@ -117,11 +117,11 @@ function SubtaskRow({ sub, idx, total, category, onUpdate, onDelete, onMove }) {
             onChange={(e) => onUpdate(sub.id, 'title', e.target.value)}
             onBlur={() => setEditingTitle(false)}
             onKeyDown={(e) => e.key === 'Enter' && setEditingTitle(false)}
-            className="w-full text-sm border-b border-purple-400 focus:outline-none bg-transparent"
+            className="w-full text-sm border-b border-purple-400 focus:outline-none bg-transparent text-gray-800 dark:text-slate-100"
           />
         ) : (
           <p
-            className="text-sm text-gray-800 truncate cursor-pointer hover:text-purple-600 transition-colors"
+            className="text-sm text-gray-800 dark:text-slate-200 truncate cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
             onClick={() => setEditingTitle(true)}
             title="Click to edit"
           >
@@ -137,10 +137,10 @@ function SubtaskRow({ sub, idx, total, category, onUpdate, onDelete, onMove }) {
         max={240}
         value={sub.estimatedMinutes}
         onChange={(e) => onUpdate(sub.id, 'estimatedMinutes', Math.max(5, Number(e.target.value)))}
-        className="w-11 text-xs text-center border border-gray-200 rounded-lg py-1 focus:outline-none focus:border-purple-400 min-h-[30px]"
+        className="w-11 text-xs text-center border border-gray-200 dark:border-white/10 rounded-lg py-1 focus:outline-none focus:border-purple-400 min-h-[30px] bg-transparent text-gray-700 dark:text-slate-300"
         aria-label="Estimated minutes"
       />
-      <span className="text-xs text-gray-400 shrink-0">m</span>
+      <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">m</span>
 
       {/* Blocking toggle */}
       <button
@@ -154,7 +154,7 @@ function SubtaskRow({ sub, idx, total, category, onUpdate, onDelete, onMove }) {
       {/* Delete */}
       <button
         onClick={() => onDelete(sub.id)}
-        className="shrink-0 text-gray-300 hover:text-red-400 transition-colors text-base leading-none min-h-[30px] min-w-[24px]"
+        className="shrink-0 text-gray-300 dark:text-slate-600 hover:text-red-400 transition-colors text-base leading-none min-h-[30px] min-w-[24px]"
         aria-label="Delete step"
       >✕</button>
     </div>
@@ -320,17 +320,17 @@ export default function DecomposeWizard({ open, task, onClose }) {
             onClick={onClose}
           />
 
-          {/* Modal card — anchored near top so CTAs are always on-screen */}
+          {/* Modal card */}
           <motion.div
             key="dw-modal"
             initial={{ opacity: 0, scale: 0.95, y: -16 }}
             animate={{ opacity: 1, scale: 1,    y: 0   }}
             exit={{    opacity: 0, scale: 0.95, y: -16 }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="fixed inset-x-4 top-[4%] bg-white rounded-2xl shadow-2xl z-50 max-w-lg mx-auto max-h-[92vh] flex flex-col"
+            className="fixed inset-x-4 top-[4%] bg-white dark:bg-[#13131a] rounded-2xl shadow-2xl z-50 max-w-lg mx-auto max-h-[92vh] flex flex-col"
           >
             {/* Progress bar */}
-            <div className="h-1 bg-gray-100 rounded-t-2xl overflow-hidden shrink-0">
+            <div className="h-1 bg-gray-100 dark:bg-gray-800 rounded-t-2xl overflow-hidden shrink-0">
               <motion.div
                 className="h-full bg-gradient-to-r from-purple-500 to-violet-600"
                 animate={{ width: confirmed ? '100%' : `${(step / 3) * 100}%` }}
@@ -340,12 +340,12 @@ export default function DecomposeWizard({ open, task, onClose }) {
 
             {/* Header row */}
             <div className="flex items-center justify-between px-5 pt-4 shrink-0">
-              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+              <span className="text-xs font-medium text-gray-400 dark:text-slate-500 uppercase tracking-wide">
                 {confirmed ? 'Done!' : `Step ${step} of 3`}
               </span>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors text-lg leading-none min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Close"
               >✕</button>
             </div>
@@ -366,16 +366,16 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                     className="px-5 pt-3 pb-6 overflow-y-auto"
                   >
-                    <h2 className="text-lg font-bold text-gray-800">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">
                       Let me understand this better…
                     </h2>
-                    <p className="text-sm text-gray-500 mt-0.5 truncate">"{task.title}"</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5 truncate">"{task.title}"</p>
 
                     {/* Pattern hint card */}
                     {patternHint?.hasSuggestion && (
-                      <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2">
+                      <div className="mt-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl p-3 flex gap-2">
                         <span className="text-blue-500 shrink-0 mt-0.5">💡</span>
-                        <p className="text-blue-700 text-sm leading-snug">
+                        <p className="text-blue-700 dark:text-blue-300 text-sm leading-snug">
                           {patternHint.suggestionText}
                         </p>
                       </div>
@@ -383,7 +383,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
 
                     {/* Question + textarea */}
                     <div className="mt-4">
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
                         {clarifyingQuestion}
                       </label>
                       <textarea
@@ -392,9 +392,9 @@ export default function DecomposeWizard({ open, task, onClose }) {
                         onChange={(e) => setAnswer(e.target.value)}
                         placeholder={placeholder}
                         rows={3}
-                        className="mt-2 w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+                        className="mt-2 w-full border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
                       />
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
                         {answer.length < 10
                           ? `${10 - answer.length} more chars needed`
                           : '✓ Ready to continue'}
@@ -423,8 +423,8 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     transition={{ type: 'spring', damping: 28, stiffness: 300 }}
                     className="px-5 pt-3 pb-6 overflow-y-auto"
                   >
-                    <h2 className="text-lg font-bold text-gray-800">How detailed should the plan be?</h2>
-                    <p className="text-sm text-gray-500 mt-0.5">Choose the breakdown style that fits your day.</p>
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-white">How detailed should the plan be?</h2>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Choose the breakdown style that fits your day.</p>
 
                     <div className="mt-5 space-y-3">
                       {GRANULARITY.map((opt) => (
@@ -432,15 +432,15 @@ export default function DecomposeWizard({ open, task, onClose }) {
                           key={opt.value}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => goStep3(opt.value)}
-                          className="w-full text-left bg-white border-2 border-gray-100 hover:border-purple-400 hover:shadow-sm rounded-2xl p-4 transition-all"
+                          className="w-full text-left bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-white/10 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-sm rounded-2xl p-4 transition-all"
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl shrink-0">{opt.icon}</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-gray-800 text-sm">{opt.label}</p>
-                              <p className="text-xs text-gray-500 mt-0.5 leading-snug">{opt.desc}</p>
+                              <p className="font-semibold text-gray-800 dark:text-slate-100 text-sm">{opt.label}</p>
+                              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 leading-snug">{opt.desc}</p>
                             </div>
-                            <span className="text-gray-300 text-lg shrink-0">›</span>
+                            <span className="text-gray-300 dark:text-slate-600 text-lg shrink-0">›</span>
                           </div>
                         </motion.button>
                       ))}
@@ -448,7 +448,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
 
                     <button
                       onClick={goBack}
-                      className="mt-4 w-full bg-gray-100 text-gray-600 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
+                      className="mt-4 w-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-slate-400 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
                     >
                       ← Back
                     </button>
@@ -469,17 +469,17 @@ export default function DecomposeWizard({ open, task, onClose }) {
                   >
                     {/* Header with locked granularity badge */}
                     <div className="flex items-center gap-2 shrink-0">
-                      <h2 className="text-lg font-bold text-gray-800">Proposed Breakdown</h2>
-                      <span className="ml-auto flex items-center gap-1 text-xs bg-purple-100 text-purple-600 px-2.5 py-0.5 rounded-full font-medium shrink-0">
+                      <h2 className="text-lg font-bold text-gray-800 dark:text-white">Proposed Breakdown</h2>
+                      <span className="ml-auto flex items-center gap-1 text-xs bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 px-2.5 py-0.5 rounded-full font-medium shrink-0">
                         {selectedGranularity?.icon} {selectedGranularity?.label}
                       </span>
                     </div>
 
                     {/* Inline pattern hint */}
                     {patternHint?.hasSuggestion && (
-                      <div className="mt-3 shrink-0 bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2">
+                      <div className="mt-3 shrink-0 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl p-3 flex gap-2">
                         <span className="text-blue-500 shrink-0 mt-0.5 text-sm">💡</span>
-                        <p className="text-blue-700 text-xs leading-snug">
+                        <p className="text-blue-700 dark:text-blue-300 text-xs leading-snug">
                           {patternHint.suggestionText}
                         </p>
                       </div>
@@ -487,7 +487,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
 
                     {/* Subtask list */}
                     {loadingSteps ? (
-                      <div className="mt-4 flex-1 flex items-center justify-center gap-2 text-gray-400 text-sm">
+                      <div className="mt-4 flex-1 flex items-center justify-center gap-2 text-gray-400 dark:text-slate-500 text-sm">
                         <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
                         Generating steps…
                       </div>
@@ -508,7 +508,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
 
                         <button
                           onClick={addSubtask}
-                          className="w-full border border-dashed border-gray-300 text-gray-500 text-sm py-2.5 rounded-xl hover:border-purple-400 hover:text-purple-500 transition-colors min-h-[44px]"
+                          className="w-full border border-dashed border-gray-300 dark:border-white/20 text-gray-500 dark:text-slate-400 text-sm py-2.5 rounded-xl hover:border-purple-400 dark:hover:border-purple-500 hover:text-purple-500 dark:hover:text-purple-400 transition-colors min-h-[44px]"
                         >
                           + Add step
                         </button>
@@ -516,9 +516,9 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     )}
 
                     {/* Time summary */}
-                    <div className="mt-3 shrink-0 flex items-center justify-between text-xs text-gray-500 bg-gray-50 rounded-xl px-3 py-2">
+                    <div className="mt-3 shrink-0 flex items-center justify-between text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2">
                       <span>
-                        Total: <strong>{fmtMin(totalEstimate)}</strong>
+                        Total: <strong className="text-gray-700 dark:text-slate-200">{fmtMin(totalEstimate)}</strong>
                       </span>
                       {task.estimated_minutes > 0 && (
                         <span>Original: {fmtMin(task.estimated_minutes)}</span>
@@ -529,7 +529,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     <div className="mt-3 shrink-0 flex gap-2">
                       <button
                         onClick={goBack}
-                        className="flex-1 bg-gray-100 text-gray-600 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
+                        className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-slate-400 font-medium py-3 rounded-xl active:scale-95 transition-transform text-sm min-h-[44px]"
                       >
                         ← Back
                       </button>
@@ -555,13 +555,13 @@ export default function DecomposeWizard({ open, task, onClose }) {
                   >
                     {/* Success header */}
                     <div className="text-center">
-                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                      <div className="w-12 h-12 bg-green-100 dark:bg-green-500/15 rounded-full flex items-center justify-center mx-auto">
                         <span className="text-2xl">✅</span>
                       </div>
-                      <h2 className="text-lg font-bold text-gray-800 mt-3 leading-snug">
+                      <h2 className="text-lg font-bold text-gray-800 dark:text-white mt-3 leading-snug">
                         {task.title}
                       </h2>
-                      <p className="text-sm text-green-600 font-medium mt-1">
+                      <p className="text-sm text-green-600 dark:text-green-400 font-medium mt-1">
                         Decomposed into {(savedSubtasks.length || subtasks.length)} steps
                       </p>
                     </div>
@@ -575,7 +575,7 @@ export default function DecomposeWizard({ open, task, onClose }) {
                     </div>
 
                     {/* Auto-schedule info */}
-                    <div className="mt-4 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2.5 text-purple-700 text-sm">
+                    <div className="mt-4 bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/25 rounded-xl px-3 py-2.5 text-purple-700 dark:text-purple-300 text-sm">
                       📅 First step scheduled for{' '}
                       <strong>{firstScheduledTime(task)}</strong>
                     </div>

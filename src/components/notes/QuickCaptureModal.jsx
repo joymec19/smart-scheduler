@@ -80,13 +80,14 @@ export default function QuickCaptureModal({ open, onClose }) {
     if (!content.trim() || submitting) return
     setSubmitting(true)
     try {
-      await addNote({
+      const notePayload = {
         user_id: user.id,
         content: content.trim(),
         category,
         tags,
-        source_task_id: linkTask ? selectedTaskId : null,
-      })
+      }
+      if (linkTask && selectedTaskId) notePayload.source_task_id = selectedTaskId
+      await addNote(notePayload)
       trackNoteCreated({ category, has_tags: tags.length > 0 })
       onClose()
     } catch {
