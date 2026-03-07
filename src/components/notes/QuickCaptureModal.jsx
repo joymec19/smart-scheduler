@@ -63,8 +63,18 @@ export default function QuickCaptureModal({ open, onClose }) {
     }
   }
 
-  const linkableTasks = tasks.filter((t) => !t.is_subtask)
-  const linkedTask = linkableTasks.find((t) => t.id === selectedTaskId)
+  const parentTasks = tasks.filter((t) => !t.is_subtask)
+  const subtasksByParent = tasks.reduce((acc, t) => {
+    if (t.is_subtask && t.parent_task_id) {
+      if (!acc[t.parent_task_id]) acc[t.parent_task_id] = []
+      acc[t.parent_task_id].push(t)
+    }
+    return acc
+  }, {})
+  const linkedTask = tasks.find((t) => t.id === selectedTaskId)
+  const linkedTaskParent = linkedTask?.is_subtask
+    ? tasks.find((t) => t.id === linkedTask.parent_task_id)
+    : null
 
   async function handleSave() {
     if (!content.trim() || submitting) return
@@ -245,47 +255,79 @@ export default function QuickCaptureModal({ open, onClose }) {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 rounded-xl border border-gray-200 dark:border-white/10 max-h-36 overflow-y-auto bg-gray-50 dark:bg-white/5">
-                      {linkableTasks.length === 0 ? (
+                    <div className="mt-3 rounded-xl border border-gray-200 dark:border-white/10 max-h-48 overflow-y-auto bg-gray-50 dark:bg-white/5">
+                      {parentTasks.length === 0 ? (
                         <p className="text-center text-xs text-slate-400 py-4">No tasks found</p>
                       ) : (
-                        linkableTasks.map((task) => (
-                          <button
-                            key={task.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedTaskId(task.id)
-                            }}
-                            className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
-                              selectedTaskId === task.id ? 'bg-violet-500/10' : ''
-                            }`}
-                          >
-                            <span
-                              className={`w-2 h-2 rounded-full shrink-0 ${
-                                task.status === 'completed' ? 'bg-emerald-400' :
-                                task.status === 'missed' ? 'bg-rose-400' :
-                                task.priority === 'high' ? 'bg-rose-400' :
-                                task.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-slate-500'
-                              }`}
-                            />
-                            <span className="truncate text-gray-700 dark:text-slate-300">{task.title}</span>
-                            <span className={`ml-auto text-[10px] shrink-0 font-medium capitalize ${
-                              task.status === 'completed' ? 'text-emerald-500' :
-                              task.status === 'missed' ? 'text-rose-400' : 'text-gray-400 dark:text-slate-500'
-                            }`}>
-                              {task.status === 'pending' ? '' : task.status}
-                            </span>
-                            {selectedTaskId === task.id && (
-                              <span className="text-violet-500 shrink-0">✓</span>
-                            )}
-                          </button>
-                        ))
+                        parentTasks.map((task) => {
+                          const subs = subtasksByParent[task.id] || []
+                          return (
+                            <div key={task.id}>
+                              {/* Parent task row */}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedTaskId(task.id)}
+                                className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 ${
+                                  selectedTaskId === task.id ? 'bg-violet-500/10' : ''
+                                }`}
+                              >
+                                <span
+                                  className={`w-2 h-2 rounded-full shrink-0 ${
+                                    task.status === 'completed' ? 'bg-emerald-400' :
+                                    task.status === 'missed' ? 'bg-rose-400' :
+                                    task.priority === 'high' ? 'bg-rose-400' :
+                                    task.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-slate-500'
+                                  }`}
+                                />
+                                <span className="truncate text-gray-700 dark:text-slate-300 font-medium">{task.title}</span>
+                                <span className={`ml-auto text-[10px] shrink-0 font-medium capitalize ${
+                                  task.status === 'completed' ? 'text-emerald-500' :
+                                  task.status === 'missed' ? 'text-rose-400' : 'text-gray-400 dark:text-slate-500'
+                                }`}>
+                                  {task.status === 'pending' ? '' : task.status}
+                                </span>
+                                {selectedTaskId === task.id && (
+                                  <span className="text-violet-500 shrink-0">✓</span>
+                                )}
+                              </button>
+
+                              {/* Subtask rows (only if decomposed) */}
+                              {subs
+                                .slice()
+                                .sort((a, b) => (a.subtask_order || 0) - (b.subtask_order || 0))
+                                .map((sub) => (
+                                  <button
+                                    key={sub.id}
+                                    type="button"
+                                    onClick={() => setSelectedTaskId(sub.id)}
+                                    className={`w-full text-left pl-7 pr-3 py-2 text-xs flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                      selectedTaskId === sub.id ? 'bg-violet-500/10' : ''
+                                    }`}
+                                  >
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                      sub.status === 'completed' ? 'bg-emerald-400' : 'bg-gray-300 dark:bg-slate-600'
+                                    }`} />
+                                    <span className={`truncate ${
+                                      sub.status === 'completed'
+                                        ? 'text-gray-400 dark:text-slate-500 line-through'
+                                        : 'text-gray-600 dark:text-slate-400'
+                                    }`}>{sub.title}</span>
+                                    {selectedTaskId === sub.id && (
+                                      <span className="ml-auto text-violet-500 shrink-0">✓</span>
+                                    )}
+                                  </button>
+                                ))}
+                            </div>
+                          )
+                        })
                       )}
                     </div>
 
                     {linkedTask && (
                       <p className="text-xs text-violet-500 dark:text-violet-400 mt-1.5 px-1">
-                        Linked to: <span className="font-semibold">{linkedTask.title}</span>
+                        Linked to: <span className="font-semibold">
+                          {linkedTaskParent ? `${linkedTaskParent.title} › ${linkedTask.title}` : linkedTask.title}
+                        </span>
                       </p>
                     )}
                   </motion.div>
