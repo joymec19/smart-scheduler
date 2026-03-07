@@ -118,8 +118,8 @@ export default function Dashboard() {
     activeNudges.length,
   ]
 
-  async function handleCreateTask(data) {
-    await addTask({ ...data, user_id: user.id })
+  async function handleCreateTask({ recurrence, ...data }) {
+    await addTask({ ...data, user_id: user.id, status: 'pending', due_at: data.due_at ? new Date(data.due_at).toISOString() : null })
     setCreateOpen(false)
   }
 
