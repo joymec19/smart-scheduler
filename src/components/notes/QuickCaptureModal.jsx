@@ -63,7 +63,7 @@ export default function QuickCaptureModal({ open, onClose }) {
     }
   }
 
-  const parentTasks = tasks.filter((t) => !t.is_subtask)
+  const parentTasks = tasks.filter((t) => !t.is_subtask && t.status === 'pending')
   const subtasksByParent = tasks.reduce((acc, t) => {
     if (t.is_subtask && t.parent_task_id) {
       if (!acc[t.parent_task_id]) acc[t.parent_task_id] = []
