@@ -63,8 +63,8 @@ export default function QuickCaptureModal({ open, onClose }) {
     }
   }
 
-  const pendingTasks = tasks.filter((t) => t.status === 'pending' && !t.is_subtask)
-  const linkedTask = pendingTasks.find((t) => t.id === selectedTaskId)
+  const linkableTasks = tasks.filter((t) => !t.is_subtask)
+  const linkedTask = linkableTasks.find((t) => t.id === selectedTaskId)
 
   async function handleSave() {
     if (!content.trim() || submitting) return
@@ -246,10 +246,10 @@ export default function QuickCaptureModal({ open, onClose }) {
                     className="overflow-hidden"
                   >
                     <div className="mt-3 rounded-xl border border-gray-200 dark:border-white/10 max-h-36 overflow-y-auto bg-gray-50 dark:bg-white/5">
-                      {pendingTasks.length === 0 ? (
-                        <p className="text-center text-xs text-slate-400 py-4">No pending tasks</p>
+                      {linkableTasks.length === 0 ? (
+                        <p className="text-center text-xs text-slate-400 py-4">No tasks found</p>
                       ) : (
-                        pendingTasks.map((task) => (
+                        linkableTasks.map((task) => (
                           <button
                             key={task.id}
                             type="button"
@@ -262,13 +262,21 @@ export default function QuickCaptureModal({ open, onClose }) {
                           >
                             <span
                               className={`w-2 h-2 rounded-full shrink-0 ${
+                                task.status === 'completed' ? 'bg-emerald-400' :
+                                task.status === 'missed' ? 'bg-rose-400' :
                                 task.priority === 'high' ? 'bg-rose-400' :
                                 task.priority === 'medium' ? 'bg-amber-400' : 'bg-gray-300 dark:bg-slate-500'
                               }`}
                             />
                             <span className="truncate text-gray-700 dark:text-slate-300">{task.title}</span>
+                            <span className={`ml-auto text-[10px] shrink-0 font-medium capitalize ${
+                              task.status === 'completed' ? 'text-emerald-500' :
+                              task.status === 'missed' ? 'text-rose-400' : 'text-gray-400 dark:text-slate-500'
+                            }`}>
+                              {task.status === 'pending' ? '' : task.status}
+                            </span>
                             {selectedTaskId === task.id && (
-                              <span className="ml-auto text-violet-500 shrink-0">✓</span>
+                              <span className="text-violet-500 shrink-0">✓</span>
                             )}
                           </button>
                         ))
