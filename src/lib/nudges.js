@@ -19,6 +19,7 @@ export async function generateNudges(userId) {
   const safeExisting = existing || []
   if (safeExisting.length >= 5) return safeExisting
 
+  const existingTypes = new Set(safeExisting.map((n) => n.type))
   const slotsLeft = 5 - safeExisting.length
 
   // Fetch tasks needed for rule evaluation
@@ -45,7 +46,7 @@ export async function generateNudges(userId) {
   const newNudges = []
 
   // Rule 1 (pattern): missed 2+ tasks in same category this week
-  if (newNudges.length < slotsLeft && weekTasks) {
+  if (newNudges.length < slotsLeft && !existingTypes.has('pattern') && weekTasks) {
     const missedByCategory = {}
     weekTasks
       .filter((t) => t.status === 'missed')
@@ -68,7 +69,7 @@ export async function generateNudges(userId) {
   }
 
   // Rule 2 (momentum): completed 3+ tasks today
-  if (newNudges.length < slotsLeft && todayTasks) {
+  if (newNudges.length < slotsLeft && !existingTypes.has('momentum') && todayTasks) {
     const completedCount = todayTasks.filter((t) => t.status === 'completed').length
     if (completedCount >= 3) {
       newNudges.push({
@@ -83,7 +84,7 @@ export async function generateNudges(userId) {
   }
 
   // Rule 3 (content): has pending Learning tasks today
-  if (newNudges.length < slotsLeft && todayTasks) {
+  if (newNudges.length < slotsLeft && !existingTypes.has('content_capture') && todayTasks) {
     const hasLearning = todayTasks.some(
       (t) => t.category === 'learning' && t.status === 'pending'
     )
