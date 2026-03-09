@@ -138,14 +138,14 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
             className="fixed bottom-0 left-0 right-0 rounded-t-3xl z-50 px-5 pt-4 pb-10 max-h-[88vh] overflow-y-auto
-              bg-white dark:bg-gray-900/98 border-t border-gray-200 dark:border-white/10"
+              bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
           >
             {/* Drag handle */}
             <div className="w-10 h-1 bg-gray-200 dark:bg-white/15 rounded-full mx-auto mb-5" />
 
             {/* Header */}
             <h2 className="text-lg font-bold text-gray-800 dark:text-white">Reschedule Task</h2>
-            <p className="text-sm text-slate-400 mt-0.5">Missed this one? Let's find a better time.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Missed this one? Let's find a better time.</p>
 
             {/* Warning banner */}
             {showWarning && (
@@ -161,9 +161,9 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
             )}
 
             {/* Task info */}
-            <div className="mt-4 bg-gray-50 dark:bg-white/5 rounded-2xl p-4 border border-gray-100 dark:border-white/10">
+            <div className="mt-4 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700">
               <p className="text-gray-800 dark:text-slate-100 font-semibold text-sm">{task.title}</p>
-              <p className="text-slate-400 text-xs mt-1">
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
                 Original due: {formatDateTime(task.due_at)}
               </p>
               {rescheduleCount > 0 && (
@@ -186,7 +186,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
                     <p className="text-gray-900 dark:text-white text-base font-bold mt-0.5">
                       {formatDateTime(previewDatetime)}
                     </p>
-                    <p className="text-violet-400 dark:text-violet-400/80 text-xs mt-1 leading-relaxed">
+                    <p className="text-violet-500 dark:text-violet-300 text-xs mt-1 leading-relaxed">
                       {suggestion.rationale_text}
                     </p>
 
@@ -210,7 +210,7 @@ export default function RescheduleModal({ open, task, onClose, onMiss }) {
             {/* Custom date picker */}
             {showPicker && (
               <div className="mt-3">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Choose a different time</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Choose a different time</label>
                 <input
                   type="datetime-local"
                   value={adjustedDate}
