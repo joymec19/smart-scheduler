@@ -191,9 +191,16 @@ const NoteCard = memo(function NoteCard({ note, onDelete }) {
 
           {/* Footer */}
           <div className="flex items-center justify-between mt-2">
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${meta.badge}`}>
-              {note.category}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${meta.badge}`}>
+                {note.category}
+              </span>
+              {note.auto_generated && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-400 border border-violet-500/25">
+                  ✨ AutoInsight
+                </span>
+              )}
+            </div>
             <span className="text-[10px] text-slate-400 font-medium">
               {timeAgo(note.created_at)}
             </span>

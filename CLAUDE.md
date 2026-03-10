@@ -350,3 +350,34 @@ shared_at    timestamptz DEFAULT now()
 - Web Share API via `react-web-share`
 - Fallbacks: Gmail, WhatsApp, native apps
 - Share events logged to `task_shares`
+
+---
+
+## AUTOINSIGHT NOTES
+
+- Triggers on Creative/Learning tasks with keywords: podcast, article, read, listen, watch
+- Templates: Learning=[Key Ideas, Action Items, Quotes], Creative=[Inspiration, Execution Steps]
+- Phase 2: Web Speech API for voice notes
+- Packages: `web-speech-cognitive-services`, `react-speech-recognition`
+
+### How it works
+1. User taps ✓ Complete on a `learning` or `creative` task whose title/description matches a keyword
+2. `detectInsightType(task)` returns `{ category, insightType }` — insightType: `podcast`, `article`, or `default`
+3. `AutoInsightModal` opens with template sections; each non-empty section saves as a separate note
+4. Notes saved with `auto_generated: true`, `parent_task_id`, `insight_type` — shown with ✨ AutoInsight badge in NoteList
+
+### Key files
+| File | Purpose |
+|------|---------|
+| src/lib/autoinsight.js | Templates + detectInsightType() |
+| src/components/notes/AutoInsightModal.jsx | Modal UI with per-section textareas |
+| src/components/tasks/TaskCard.jsx | Triggers modal after ✓ Complete |
+| src/components/notes/NoteList.jsx | ✨ AutoInsight badge on note cards |
+
+### New DB columns (run in Supabase SQL)
+```sql
+ALTER TABLE mental_notes ADD COLUMN auto_generated boolean DEFAULT false;
+ALTER TABLE mental_notes ADD COLUMN parent_task_id uuid REFERENCES tasks(id);
+ALTER TABLE mental_notes ADD COLUMN insight_type text; -- 'podcast', 'article', 'voice'
+```
+> The app gracefully falls back if columns aren't yet migrated (strips unknown columns and retries).

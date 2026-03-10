@@ -3,8 +3,10 @@ import { motion } from 'framer-motion'
 import RescheduleModal from './RescheduleModal'
 import DecomposeWizard from '../decomposition/DecomposeWizard'
 import ShareFallbackModal from '../share/ShareFallbackModal'
+import AutoInsightModal from '../notes/AutoInsightModal'
 import { trackTaskCompleted } from '../../lib/analytics-tracking'
 import { shareTask } from '../../lib/share'
+import { detectInsightType } from '../../lib/autoinsight'
 import useTaskStore from '../../stores/useTaskStore'
 
 const CATEGORY_COLORS = {
@@ -158,11 +160,12 @@ function SubtaskActionRow({ sub, onComplete }) {
 
 // ── TaskCard ─────────────────────────────────────────────────────────────────
 const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap, onDelete }) {
-  const [rescheduleOpen, setRescheduleOpen] = useState(false)
-  const [wizardOpen, setWizardOpen]         = useState(false)
-  const [expanded, setExpanded]             = useState(false)
-  const [shareModal, setShareModal]         = useState({ open: false, content: null })
-  const [confirmDelete, setConfirmDelete]   = useState(false)
+  const [rescheduleOpen, setRescheduleOpen]   = useState(false)
+  const [wizardOpen, setWizardOpen]           = useState(false)
+  const [expanded, setExpanded]               = useState(false)
+  const [shareModal, setShareModal]           = useState({ open: false, content: null })
+  const [confirmDelete, setConfirmDelete]     = useState(false)
+  const [insightModal, setInsightModal]       = useState({ open: false, insightType: 'default' })
 
   const { tasks: allTasks, markComplete: markSubtaskComplete } = useTaskStore()
   const subtasks      = allTasks.filter((t) => t.parent_task_id === task.id && t.is_subtask)
@@ -353,6 +356,8 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap, onDel
             onClick={() => {
               trackTaskCompleted({ was_overdue: isOverdue(task.due_at) })
               onComplete?.(task.id)
+              const insight = detectInsightType(task)
+              if (insight) setInsightModal({ open: true, insightType: insight.insightType })
             }}
             className="flex-1 py-2.5 text-xs font-semibold text-emerald-500 hover:bg-emerald-500/10 active:bg-emerald-500/15 transition-colors rounded-bl-2xl min-h-[40px]"
           >
@@ -408,6 +413,13 @@ const TaskCard = memo(function TaskCard({ task, onComplete, onMiss, onTap, onDel
       open={shareModal.open}
       shareContent={shareModal.content}
       onClose={() => setShareModal({ open: false, content: null })}
+    />
+
+    <AutoInsightModal
+      open={insightModal.open}
+      task={task}
+      insightType={insightModal.insightType}
+      onClose={() => setInsightModal({ open: false, insightType: 'default' })}
     />
     </>
   )

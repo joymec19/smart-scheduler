@@ -27,10 +27,11 @@ export async function createNote(data) {
     .single()
 
   if (error) {
-    // 42703 = undefined_column — source_task_id column not yet migrated in this DB.
-    // Retry without it so note creation never fails because of the missing column.
-    if (error.code === '42703' && data.source_task_id !== undefined) {
-      const { source_task_id: _stripped, ...rest } = data
+    // 42703 = undefined_column — strip unknown columns and retry once so note
+    // creation never fails because of a missing migration (source_task_id,
+    // auto_generated, parent_task_id, insight_type).
+    if (error.code === '42703') {
+      const { source_task_id: _s, auto_generated: _a, parent_task_id: _p, insight_type: _i, ...rest } = data
       const { data: note2, error: error2 } = await supabase
         .from('mental_notes')
         .insert(rest)
